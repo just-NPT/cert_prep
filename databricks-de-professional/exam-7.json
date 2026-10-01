@@ -1,0 +1,1721 @@
+{
+    "count": 59,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "_class": "assessment",
+            "id": 990007001,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>The <code>orders</code> DataFrame has an <code>items</code> array column, which is empty or NULL for some orders. The output must have one row per item, and orders without items must still appear once with a NULL item.</p><p>Which function should be used?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>explode_outer</code> returns a row with NULL when the array is NULL or empty. <code>explode</code> and <code>posexplode</code> drop those rows.</p><p><code>flatten</code> merges an array of arrays into a single array and doesn't create rows.</p>",
+                "answers": [
+                    "<p><code>explode_outer(\"items\")</code></p>",
+                    "<p><code>flatten(\"items\")</code></p>",
+                    "<p><code>posexplode(\"items\")</code></p>",
+                    "<p><code>explode(\"items\")</code></p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Developing Code (Python & SQL)",
+            "question_plain": "The orders DataFrame has an items array column, which is empty or NULL for some orders. The output must have one row per item, and orders without items must still appear once with a NULL item.Which function should be used?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007002,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A report needs one row per <code>store_id</code> and one column per month (<code>Jan</code> to <code>Dec</code>) holding the total <code>amount</code>. The month values are known in advance.</p><p>Which code produces this most efficiently?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>pivot</code> turns the distinct values of a column into columns. If you don't pass the values, Spark first runs an extra job to compute them. Passing a known list skips that job and also fixes the column order.</p><p>Swapping the roles of the two columns gives the wrong shape, and <code>pivot</code> must come after <code>groupBy</code>.</p>",
+                "answers": [
+                    "<p>df.groupBy(\"month\").pivot(\"store_id\").sum(\"amount\")</p>",
+                    "<pre class=\"prettyprint linenums\">df.groupBy(\"store_id\").pivot(\"month\", [\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\n                                       \"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"]).sum(\"amount\")</pre>",
+                    "<p>df.groupBy(\"store_id\").pivot(\"month\").sum(\"amount\")</p>",
+                    "<p>df.pivot(\"month\").groupBy(\"store_id\").sum(\"amount\")</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Developing Code (Python & SQL)",
+            "question_plain": "A report needs one row per store_id and one column per month (Jan to Dec) holding the total amount. The month values are known in advance.Which code produces this most efficiently?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007003,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A data engineer needs a reusable Python function that takes one text value and returns a variable number of rows, one per token, with columns <code>token</code> and <code>position</code>. It should be callable in the <code>FROM</code> clause of SQL queries.</p><p>Which construct fits?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>A UDTF returns a table: zero or more rows, with several columns, for each input. Once registered, you call it in the <code>FROM</code> clause.</p><p>Scalar UDFs (Python, pandas, or SQL) return exactly one value per input row. An array UDF would still need an extra explode step.</p>",
+                "answers": [
+                    "<p>A SQL scalar UDF created with <code>CREATE FUNCTION ... RETURNS STRING</code></p>",
+                    "<p>A Python user-defined table function (UDTF), defined with <code>@udtf(returnType=\"token: string, position: int\")</code> on a class whose <code>eval</code> method yields rows</p>",
+                    "<p>A scalar pandas UDF that returns a pandas Series</p>",
+                    "<p>A Python UDF that returns an array, used with <code>@udf(\"array&lt;string&gt;\")</code></p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Developing Code (Python & SQL)",
+            "question_plain": "A data engineer needs a reusable Python function that takes one text value and returns a variable number of rows, one per token, with columns token and position. It should be callable in the FROM clause of SQL queries.Which construct fits?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007004,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>The finance team wants one governed definition of the \"net price\" calculation. It must be usable from SQL warehouses and notebooks, and calling it should require an explicit permission.</p><p>Which approach fits best?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>A Unity Catalog function is stored in a schema, can be found by other users, works across compute types, and is controlled with <code>EXECUTE</code> grants.</p><p>Temporary functions and session-registered UDFs only exist for one session. A <code>%run</code> helper is limited to Python notebooks and isn't governed.</p>",
+                "answers": [
+                    "<pre class=\"prettyprint linenums\"># shared_utils notebook, included everywhere with %run\ndef net_price(price, discount):\n    return price * (1 - discount)</pre>",
+                    "<pre class=\"prettyprint linenums\">CREATE FUNCTION main.finance.net_price(price DOUBLE, discount DOUBLE)\nRETURNS DOUBLE RETURN price * (1 - discount);\n\nGRANT EXECUTE ON FUNCTION main.finance.net_price TO `analysts`;</pre>",
+                    "<pre class=\"prettyprint linenums\">spark.udf.register(\"net_price\", lambda p, d: p * (1 - d))\n-- run at the start of every session</pre>",
+                    "<pre class=\"prettyprint linenums\">CREATE TEMPORARY FUNCTION net_price(price DOUBLE, discount DOUBLE)\nRETURNS DOUBLE RETURN price * (1 - discount);</pre>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Developing Code (Python & SQL)",
+            "question_plain": "The finance team wants one governed definition of the \"net price\" calculation. It must be usable from SQL warehouses and notebooks, and calling it should require an explicit permission.Which approach fits best?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007005,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A dashboard shows the number of distinct users per day from a clickstream table with 30 billion rows. <code>count(DISTINCT user_id)</code> is slow, and an error of about 1–2% is acceptable.</p><p>Which change gives the biggest improvement?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>approx_count_distinct</code> uses HyperLogLog++ to estimate the number of distinct values with bounded error, using little memory and no full shuffle of distinct values.</p><p><code>count()</code> counts every row, including duplicates. Collecting to the driver doesn't scale. A two-step distinct does the same expensive work.</p>",
+                "answers": [
+                    "<p>Use <code>count(user_id)</code> instead of <code>count(DISTINCT user_id)</code>.</p>",
+                    "<p>Run <code>SELECT DISTINCT user_id</code> first, then count the result in a second query.</p>",
+                    "<p>Call <code>collect()</code> on the user IDs and count unique values in Python.</p>",
+                    "<p>Use <code>approx_count_distinct(user_id)</code> instead of <code>count(DISTINCT user_id)</code>.</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Developing Code (Python & SQL)",
+            "question_plain": "A dashboard shows the number of distinct users per day from a clickstream table with 30 billion rows. count(DISTINCT user_id) is slow, and an error of about 1–2% is acceptable.Which change gives the biggest improvement?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007006,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A notebook task ends with this code:</p><pre class=\"prettyprint linenums\">try:\n    run_pipeline()\nexcept Exception as e:\n    log_error(e)\n    dbutils.notebook.exit(f\"FAILED: {e}\")</pre><p>When <code>run_pipeline()</code> throws an error, the job run still shows as <strong>Succeeded</strong>. How should this be fixed?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>dbutils.notebook.exit()</code> ends the notebook successfully and returns a value. A task is only marked failed when an exception goes uncaught. Catch it to log, then raise it again. Retries and notifications also depend on the task being marked as failed.</p><p><code>exit</code> has no status argument.</p>",
+                "answers": [
+                    "<p>After logging, raise the exception again (for example with <code>raise</code>) instead of calling <code>dbutils.notebook.exit</code>, so the task is marked as failed.</p>",
+                    "<p>Pass <code>status=\"FAILED\"</code> to <code>dbutils.notebook.exit</code>.</p>",
+                    "<p>Replace <code>dbutils.notebook.exit</code> with <code>print</code>, so the message shows up in the task output.</p>",
+                    "<p>Set the task's retry count to 3 so that the failure is detected.</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Developing Code (Python & SQL)",
+            "question_plain": "A notebook task ends with this code:try:\n    run_pipeline()\nexcept Exception as e:\n    log_error(e)\n    dbutils.notebook.exit(f\"FAILED: {e}\")When run_pipeline() throws an error, the job run still shows as Succeeded. How should this be fixed?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007007,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>An Auto Loader stream reads CSV files with schema inference, using <code>cloudFiles.schemaLocation</code>. Every column in the resulting table is STRING, including numeric and date fields.</p><p>How can the engineer get proper column types inferred?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>For formats that don't encode types, such as JSON and CSV, Auto Loader infers every column as STRING by default to avoid type mismatches as files evolve. Setting <code>cloudFiles.inferColumnTypes</code> to <code>true</code> makes it infer the real types. You can also use schema hints for specific columns.</p><p>The evolution mode and <code>mergeSchema</code> control new columns, not types.</p>",
+                "answers": [
+                    "<p>Set <code>.option(\"cloudFiles.inferColumnTypes\", \"true\")</code>.</p>",
+                    "<p>Set <code>.option(\"cloudFiles.schemaEvolutionMode\", \"addNewColumns\")</code>.</p>",
+                    "<p>Set <code>.option(\"mergeSchema\", \"true\")</code> on the write.</p>",
+                    "<p>Delete the schema location before every run.</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Data Ingestion",
+            "question_plain": "An Auto Loader stream reads CSV files with schema inference, using cloudFiles.schemaLocation. Every column in the resulting table is STRING, including numeric and date fields.How can the engineer get proper column types inferred?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007008,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>What does Auto Loader store in the directory given by <code>cloudFiles.schemaLocation</code>?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>The schema location keeps the schema Auto Loader has inferred and each version as it evolves. Restarts and later runs then use the same schema, and the source doesn't have to be sampled again.</p><p>The checkpoint location tracks which files have been processed. Rescued data stays in the target table. Bad records go to <code>badRecordsPath</code> when it is configured.</p>",
+                "answers": [
+                    "<p>The offsets of files that have already been processed, which replaces the streaming checkpoint</p>",
+                    "<p>Records that couldn't be parsed, along with their exception details</p>",
+                    "<p>The inferred schema and its later versions, so restarts use a consistent schema without inferring it again</p>",
+                    "<p>Copies of the records that went to the <code>_rescued_data</code> column</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Data Ingestion",
+            "question_plain": "What does Auto Loader store in the directory given by cloudFiles.schemaLocation?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007009,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>An Auto Loader stream uses file notification mode. Cloud storage notifications aren't guaranteed to be delivered, and the team wants to be sure that every file is eventually processed even if a notification is lost.</p><p>Which option should they set?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>cloudFiles.backfillInterval</code> makes Auto Loader run an asynchronous directory listing on a schedule. It finds and processes files whose notification was missed, so every file is processed eventually, without the cost of listing on every micro-batch.</p><p><code>includeExistingFiles</code> only affects the first run.</p>",
+                "answers": [
+                    "<p><code>cloudFiles.includeExistingFiles = \"true\"</code></p>",
+                    "<p><code>cloudFiles.allowOverwrites = \"true\"</code></p>",
+                    "<p><code>cloudFiles.backfillInterval</code>, for example <code>\"1 day\"</code></p>",
+                    "<p><code>cloudFiles.maxFilesPerTrigger = \"1\"</code></p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Data Ingestion",
+            "question_plain": "An Auto Loader stream uses file notification mode. Cloud storage notifications aren't guaranteed to be delivered, and the team wants to be sure that every file is eventually processed even if a notification is lost.Which option should they set?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007010,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A data engineer needs to stream events from Azure Event Hubs into a Delta table, using only the connectors built into Databricks Runtime. Which approach works?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Event Hubs exposes an endpoint that speaks the Kafka protocol. The built-in Structured Streaming Kafka connector can read from it once <code>kafka.bootstrap.servers</code>, <code>kafka.security.protocol</code>, and the SASL settings are configured.</p><p>Auto Loader reads files. Federation and Delta Sharing don't read message streams.</p>",
+                "answers": [
+                    "<p>Set up a Delta Sharing recipient for the Event Hubs namespace.</p>",
+                    "<p>Create a Lakehouse Federation connection to the Event Hubs namespace.</p>",
+                    "<p>Use Auto Loader with <code>cloudFiles.format</code> set to <code>eventhubs</code>.</p>",
+                    "<p>Use the Spark Kafka source pointed at the Event Hubs namespace's Kafka-compatible endpoint (port 9093), with SASL_SSL authentication options.</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Data Ingestion",
+            "question_plain": "A data engineer needs to stream events from Azure Event Hubs into a Delta table, using only the connectors built into Databricks Runtime. Which approach works?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007011,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>Which statement correctly compares Auto Loader and <code>COPY INTO</code> for loading files from cloud storage?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Both tools load each file exactly once. Auto Loader records processed files in its checkpoint (RocksDB), supports directory listing and file notifications, handles schema evolution, and runs with <code>availableNow</code> or continuously. <code>COPY INTO</code> tracks loaded files in the target table's metadata and is a good fit for smaller or ad-hoc SQL loads.</p>",
+                "answers": [
+                    "<p>Only <code>COPY INTO</code> keeps track of which files were already loaded. Auto Loader reprocesses all files on every run.</p>",
+                    "<p>Auto Loader scales to millions of files, supports file notification mode, and can infer and evolve schemas. <code>COPY INTO</code> is a simple, idempotent SQL command suited to directories with thousands of files.</p>",
+                    "<p><code>COPY INTO</code> scales better than Auto Loader for directories that hold billions of files.</p>",
+                    "<p>Auto Loader can only run in continuous mode, while <code>COPY INTO</code> can be scheduled.</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Data Ingestion",
+            "question_plain": "Which statement correctly compares Auto Loader and COPY INTO for loading files from cloud storage?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007012,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A SQL-only team wants a streaming table that continuously ingests the Kafka topic <code>events</code>. Which statement should they use?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>The <code>read_kafka</code> table-valued function reads Kafka from SQL. When it's wrapped in <code>STREAM</code> inside a streaming table, each refresh reads only new offsets.</p><p><code>read_files</code> reads files from storage, and Kafka isn't a Lakehouse Federation source.</p>",
+                "answers": [
+                    "<pre class=\"prettyprint linenums\">CREATE MATERIALIZED VIEW kafka_events AS\nSELECT * FROM kafka.`broker1:9092/events`;</pre>",
+                    "<pre class=\"prettyprint linenums\">CREATE OR REFRESH STREAMING TABLE kafka_events AS\nSELECT * FROM STREAM read_files('kafka://broker1:9092/events');</pre>",
+                    "<pre class=\"prettyprint linenums\">CREATE FOREIGN CATALOG kafka USING CONNECTION kafka_conn;\nCREATE TABLE kafka_events AS SELECT * FROM kafka.default.events;</pre>",
+                    "<pre class=\"prettyprint linenums\">CREATE OR REFRESH STREAMING TABLE kafka_events AS\nSELECT * FROM STREAM read_kafka(\n  bootstrapServers =&gt; 'broker1:9092',\n  subscribe =&gt; 'events');</pre>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Data Ingestion",
+            "question_plain": "A SQL-only team wants a streaming table that continuously ingests the Kafka topic events. Which statement should they use?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007013,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A streaming query unions two streams before an aggregation:</p><pre class=\"prettyprint linenums\">a = stream_a.withWatermark(\"ts\", \"10 minutes\")\nb = stream_b.withWatermark(\"ts\", \"1 hour\")\na.unionByName(b).groupBy(F.window(\"ts\", \"5 minutes\")).count()</pre><p>With default settings, which watermark decides when windows are finalized?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>When several inputs have watermarks, Spark tracks each one and by default uses the minimum as the global watermark (<code>spark.sql.streaming.multipleWatermarkPolicy = min</code>). This is safe because no data is dropped too early, at the cost of more latency.</p><p>Setting the policy to <code>max</code> advances faster but may drop data from the slower stream.</p>",
+                "answers": [
+                    "<p>The minimum of the two watermarks, so the slower stream (the one with the 1-hour delay) determines progress.</p>",
+                    "<p>Neither. Streams with different watermarks can't be unioned.</p>",
+                    "<p>The watermark of whichever stream appears first in the union.</p>",
+                    "<p>The maximum of the two watermarks, so the faster stream (the one with the 10-minute delay) determines progress.</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "A streaming query unions two streams before an aggregation:a = stream_a.withWatermark(\"ts\", \"10 minutes\")\nb = stream_b.withWatermark(\"ts\", \"1 hour\")\na.unionByName(b).groupBy(F.window(\"ts\", \"5 minutes\")).count()With default settings, which watermark decides when windows are finalized?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007014,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A streaming aggregation uses the following window:</p><pre class=\"prettyprint linenums\">.groupBy(F.window(\"event_ts\", \"10 minutes\", \"5 minutes\"))</pre><p>Which windows does an event with <code>event_ts = 12:07</code> count toward?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>A window with a slide shorter than its duration is a sliding window. Windows are 10 minutes long and start every 5 minutes, so each event falls into duration/slide = 2 overlapping windows. The two windows that contain 12:07 are [12:00, 12:10) and [12:05, 12:15).</p>",
+                "answers": [
+                    "<p>Only 12:05–12:15</p>",
+                    "<p>12:00–12:10 and 12:05–12:15</p>",
+                    "<p>12:00–12:05, 12:05–12:10, and 12:10–12:15</p>",
+                    "<p>Only 12:00–12:10</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "A streaming aggregation uses the following window:.groupBy(F.window(\"event_ts\", \"10 minutes\", \"5 minutes\"))Which windows does an event with event_ts = 12:07 count toward?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007015,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>Product analytics wants to group each user's clickstream events into sessions. A session ends after 30 minutes without activity, so sessions vary in length.</p><p>Which grouping expression should be used in the streaming aggregation?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Session windows have a dynamic length. A window starts with an event and is extended by each event that arrives within the gap, and it closes after the gap passes with no new events. Group by user and <code>session_window</code>.</p><p>Tumbling and sliding windows have fixed boundaries that don't follow user activity.</p>",
+                "answers": [
+                    "<p><code>F.window(\"event_ts\", \"30 minutes\", \"5 minutes\")</code></p>",
+                    "<p><code>F.date_trunc(\"hour\", \"event_ts\")</code></p>",
+                    "<p><code>F.session_window(\"event_ts\", \"30 minutes\")</code></p>",
+                    "<p><code>F.window(\"event_ts\", \"30 minutes\")</code></p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "Product analytics wants to group each user's clickstream events into sessions. A session ends after 30 minutes without activity, so sessions vary in length.Which grouping expression should be used in the streaming aggregation?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007016,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A streaming query reads from a Delta table and has a checkpoint location. With no custom code, which sink gives end-to-end exactly-once guarantees when the query fails and restarts?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>The Delta sink uses the checkpoint and Delta transaction metadata to make each micro-batch commit idempotent, so it achieves exactly-once.</p><p>- The Kafka sink is at-least-once.<br>- <code>foreach</code> and <code>foreachBatch</code> writes to external systems are at-least-once unless you make them idempotent yourself, for example with upserts or the <code>txnAppId</code>/<code>txnVersion</code> options for Delta.</p>",
+                "answers": [
+                    "<p>A <code>foreach</code> sink that posts each row to a REST API</p>",
+                    "<p>A Delta table sink (<code>writeStream.toTable(...)</code>)</p>",
+                    "<p>A <code>foreachBatch</code> sink that inserts each micro-batch into a JDBC database</p>",
+                    "<p>A Kafka sink</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "A streaming query reads from a Delta table and has a checkpoint location. With no custom code, which sink gives end-to-end exactly-once guarantees when the query fails and restarts?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007017,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>In an SDP pipeline, an intermediate dataset joins and cleans two sources. It feeds two downstream tables, but it should not be published to Unity Catalog or be queryable outside the pipeline.</p><p>How should it be defined?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Temporary views in a pipeline exist only inside that pipeline. Downstream datasets can use them, but they aren't stored or published to the catalog.</p><p>Tables and materialized views are always stored and registered in Unity Catalog. Global temporary views from other notebooks aren't part of the pipeline graph.</p>",
+                "answers": [
+                    "<p>As a streaming table with the table property <code>pipelines.reset.allowed = false</code></p>",
+                    "<p>As a materialized view in a schema that no one has been granted access to</p>",
+                    "<p>As a global temporary view created in a separate notebook</p>",
+                    "<p>As a temporary view in the pipeline (for example, <code>CREATE TEMPORARY VIEW</code> in SQL)</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "In an SDP pipeline, an intermediate dataset joins and cleans two sources. It feeds two downstream tables, but it should not be published to Unity Catalog or be queryable outside the pipeline.How should it be defined?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007018,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>What is the difference between running an SDP pipeline in development mode and in production mode?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Development mode is built for quick iteration: the cluster is kept running between updates, and failures aren't retried automatically. Production mode is built for reliability: it restarts the cluster for certain recoverable errors and retries execution.</p><p>In both modes the pipeline writes to the same target tables and enforces the same expectations.</p>",
+                "answers": [
+                    "<p>Production mode turns off expectations to maximize throughput.</p>",
+                    "<p>Development mode writes to temporary tables that are dropped after each update, and production mode writes to Unity Catalog.</p>",
+                    "<p>Development mode reuses the compute and turns off automatic retries so errors show up quickly. Production mode restarts compute for recoverable errors and retries failed updates.</p>",
+                    "<p>Development mode only processes a 10% sample of the source data.</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "What is the difference between running an SDP pipeline in development mode and in production mode?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007019,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>An SDP pipeline must refresh its tables once an hour to meet its SLA, and the team wants to keep compute costs as low as possible.</p><p>How should the pipeline run?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Triggered pipelines process all available data, then stop their compute. Running one on a schedule that matches the SLA keeps costs down.</p><p>Continuous pipelines keep compute running all the time, which you only need for low latency. A full refresh on every run reprocesses everything.</p>",
+                "answers": [
+                    "<p>In triggered mode, with a full refresh on every run</p>",
+                    "<p>In continuous mode with a processing-time trigger of 1 hour</p>",
+                    "<p>In triggered mode, scheduled every hour, so compute processes the available data and then shuts down</p>",
+                    "<p>In continuous mode, so tables are always up to date</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "An SDP pipeline must refresh its tables once an hour to meet its SLA, and the team wants to keep compute costs as low as possible.How should the pipeline run?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007020,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p><code>silver.customers</code> has Change Data Feed enabled and receives inserts, updates, and deletes. A gold table that keeps one row per customer must be updated incrementally, including removing customers deleted in silver.</p><p>Which approach should be used?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>CDF provides row-level change events, including deletes and update postimages, that a stream can read incrementally. A MERGE that takes the latest event per key and acts on <code>_change_type</code> keeps gold in sync.</p><p><code>skipChangeCommits</code> ignores the deletes. <code>INSERT INTO</code> duplicates rows. Union snapshots don't capture the individual changes.</p>",
+                "answers": [
+                    "<p>Rebuild gold every hour with <code>INSERT INTO gold SELECT * FROM silver.customers</code>.</p>",
+                    "<p>Read silver with time travel at the previous version and union it with the current version.</p>",
+                    "<p>Stream silver as a normal Delta source with <code>skipChangeCommits</code> set to <code>true</code>, and append the results to gold.</p>",
+                    "<p>Stream silver's Change Data Feed. In <code>foreachBatch</code>, keep the latest change per key, then MERGE into gold, deleting matched rows whose <code>_change_type</code> is <code>delete</code> and upserting the others.</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "silver.customers has Change Data Feed enabled and receives inserts, updates, and deletes. A gold table that keeps one row per customer must be updated incrementally, including removing customers deleted in silver.Which approach should be used?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007021,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>With ANSI SQL mode enabled, a cleansing query fails because some values in the STRING column <code>qty</code> (such as <code>'N/A'</code>) can't be cast to INT. Invalid values should become NULL so they can be quarantined later.</p><p>Which expression should be used?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>In ANSI mode, <code>CAST</code> (including the <code>::</code> shorthand and functions like <code>int()</code>) raises an error on invalid input. <code>try_cast</code> returns NULL instead. Similar functions include <code>try_to_timestamp</code> and <code>try_divide</code>.</p>",
+                "answers": [
+                    "<p><code>try_cast(qty AS INT)</code></p>",
+                    "<p><code>cast(qty AS INT)</code></p>",
+                    "<p><code>int(qty)</code></p>",
+                    "<p><code>qty::INT</code></p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "With ANSI SQL mode enabled, a cleansing query fails because some values in the STRING column qty (such as 'N/A') can't be cast to INT. Invalid values should become NULL so they can be quarantined later.Which expression should be used?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007022,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A <code>foreachBatch</code> function upserts CDC events into the target table <code>accounts</code>. Events can arrive out of order across micro-batches, and each one has a monotonically increasing <code>seq</code> number.</p><p>Which MERGE stops a late, older event from overwriting a newer state?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>A conditional <code>WHEN MATCHED AND s.seq &gt; t.seq</code> only updates when the incoming event is newer than the stored state. The batch should also be reduced to the latest event per key first.</p><p>Putting the sequence check in the <code>ON</code> clause makes older events miss the match, and they would then be inserted as duplicates. Ordering an INSERT doesn't upsert anything.</p>",
+                "answers": [
+                    "<p>INSERT INTO accounts SELECT * FROM batch ORDER BY seq</p>",
+                    "<pre class=\"prettyprint linenums\">MERGE INTO accounts t USING batch s ON t.id = s.id AND s.seq &gt; t.seq\nWHEN MATCHED THEN UPDATE SET *\nWHEN NOT MATCHED THEN INSERT *</pre>",
+                    "<pre class=\"prettyprint linenums\">MERGE INTO accounts t USING batch s ON t.id = s.id\nWHEN MATCHED THEN UPDATE SET *\nWHEN NOT MATCHED THEN INSERT *</pre>",
+                    "<pre class=\"prettyprint linenums\">MERGE INTO accounts t USING batch s ON t.id = s.id\nWHEN MATCHED AND s.seq &gt; t.seq THEN UPDATE SET *\nWHEN NOT MATCHED THEN INSERT *</pre>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Transformation, Cleansing & Quality",
+            "question_plain": "A foreachBatch function upserts CDC events into the target table accounts. Events can arrive out of order across micro-batches, and each one has a monotonically increasing seq number.Which MERGE stops a late, older event from overwriting a newer state?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007023,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A provider updates a shared Delta table several times a day. When do Databricks-to-Databricks recipients see the changes?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Delta Sharing doesn't copy data to recipients. Recipients read the shared table's files directly, using short-lived credentials issued for each query, so each query sees the provider's latest committed version.</p><p>The recipient's catalog only holds references to the shared objects.</p>",
+                "answers": [
+                    "<p>After the provider runs <code>ALTER SHARE ... REFRESH</code></p>",
+                    "<p>Only after the recipient creates a new catalog from the share</p>",
+                    "<p>Once a day, when Delta Sharing copies the table to the recipient's metastore</p>",
+                    "<p>On their next query, because recipients read the provider's current table version directly and no data is copied</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Data Sharing & Federation",
+            "question_plain": "A provider updates a shared Delta table several times a day. When do Databricks-to-Databricks recipients see the changes?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007024,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>The bearer-token credential file of an open-sharing recipient was accidentally posted in a public repository. What should the provider do right away?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>In open sharing, anyone who holds a valid bearer token can read the data. Rotating the token issues a new credential, and setting the old one to expire right away cuts off access through the leaked file. Short token lifetimes and IP access lists reduce this risk further.</p><p>Changing the share's contents doesn't invalidate the leaked token.</p>",
+                "answers": [
+                    "<p>Rotate the recipient's token, set the existing token to expire immediately, and send the new activation link through a secure channel.</p>",
+                    "<p>Remove all tables from the share and add them back.</p>",
+                    "<p>Run <code>VACUUM</code> on the shared tables so the exposed credential can no longer read old files.</p>",
+                    "<p>Change the share's comment to mark it as compromised.</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Data Sharing & Federation",
+            "question_plain": "The bearer-token credential file of an open-sharing recipient was accidentally posted in a public repository. What should the provider do right away?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007025,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A provider wants to make sure an open-sharing recipient can only read the shared data from the partner's corporate network ranges. What should the provider configure?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Delta Sharing lets providers attach an IP access list to an open-sharing recipient, so the recipient's credentials only work from the allowed IP ranges.</p><p>A workspace IP access list protects the provider's own workspace, not access to shared data. Row filters can't see the recipient's network address.</p>",
+                "answers": [
+                    "<p>A workspace IP access list in the provider's workspace</p>",
+                    "<p>A row filter on every shared table that checks <code>current_user()</code></p>",
+                    "<p>A cluster policy on the provider's SQL warehouse</p>",
+                    "<p>An IP access list on the recipient</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Data Sharing & Federation",
+            "question_plain": "A provider wants to make sure an open-sharing recipient can only read the shared data from the partner's corporate network ranges. What should the provider configure?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007026,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>Since dashboards started querying a PostgreSQL database through a Lakehouse Federation foreign catalog, the database has been overloaded and dashboard performance is poor. The data only needs to be refreshed hourly.</p><p>What should the team do?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Federation works well for ad-hoc and occasional queries, but each query hits the source system. For heavy, repeated workloads, copy the data into Delta on a schedule that matches its freshness needs. This takes load off the source and makes queries faster.</p>",
+                "answers": [
+                    "<p>Give the PostgreSQL connection more Spark executors so federated queries run faster.</p>",
+                    "<p>Turn on Delta caching for the foreign catalog so PostgreSQL tables are kept on local disks forever.</p>",
+                    "<p>Materialize the needed federated data into Delta, for example with a materialized view or an ingestion job refreshed hourly, and point the dashboards at the Delta tables.</p>",
+                    "<p>Grant the dashboard users direct access to the PostgreSQL database.</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Data Sharing & Federation",
+            "question_plain": "Since dashboards started querying a PostgreSQL database through a Lakehouse Federation foreign catalog, the database has been overloaded and dashboard performance is poor. The data only needs to be refreshed hourly.What should the team do?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007027,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A provider wants to share tables with a partner who uses a Databricks workspace that is not enabled for Unity Catalog. Which sharing method must the provider use?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Databricks-to-Databricks sharing needs a recipient metastore, and the sharing identifier is based on it. Without Unity Catalog, the partner can still read the shares through open sharing, for example with the Spark connector and a credential file.</p>",
+                "answers": [
+                    "<p>Open sharing (a token-based or OIDC credential), because Databricks-to-Databricks sharing requires the recipient to use Unity Catalog</p>",
+                    "<p>Deep clone the tables into the partner's DBFS root</p>",
+                    "<p>Databricks-to-Databricks sharing, using the partner's workspace URL as the sharing identifier</p>",
+                    "<p>Lakehouse Federation from the partner's workspace to the provider's metastore</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Data Sharing & Federation",
+            "question_plain": "A provider wants to share tables with a partner who uses a Databricks workspace that is not enabled for Unity Catalog. Which sharing method must the provider use?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007028,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>An ML team logs every model prediction to a Unity Catalog table, with the columns <code>prediction</code>, <code>label</code> (filled in later), <code>model_version</code>, and <code>request_ts</code>. They want to monitor prediction drift and model quality over time.</p><p>Which data profiling (Lakehouse Monitoring) profile type should they use?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>The InferenceLog profile is built for model request and response tables. It needs prediction, model ID, and timestamp columns (labels are optional) and computes drift and model quality metrics over time windows and model versions.</p><p>TimeSeries profiles general time-partitioned data, and Snapshot profiles the whole table. There's no profile type called Expectations.</p>",
+                "answers": [
+                    "<p>Snapshot</p>",
+                    "<p>InferenceLog</p>",
+                    "<p>TimeSeries</p>",
+                    "<p>Expectations</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Monitoring & Alerting",
+            "question_plain": "An ML team logs every model prediction to a Unity Catalog table, with the columns prediction, label (filled in later), model_version, and request_ts. They want to monitor prediction drift and model quality over time.Which data profiling (Lakehouse Monitoring) profile type should they use?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007029,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A platform team wants to be told automatically when tables in the <code>prod.sales</code> schema stop receiving fresh data or receive far fewer rows than usual, without writing rules for each table.</p><p>Which feature fits best?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Anomaly detection monitors every table in a schema, models its historical commit patterns and volumes, and flags tables that are stale or incomplete, with no thresholds to define.</p><p>Constraints and expectations validate the values of rows that are written. They can't detect data that never arrived.</p>",
+                "answers": [
+                    "<p>A CHECK constraint on every table in the schema</p>",
+                    "<p>Data quality monitoring (anomaly detection) on the schema, which learns each table's usual update pattern and flags freshness and completeness problems</p>",
+                    "<p>A job email notification on every job that writes to the schema</p>",
+                    "<p>Expectations with <code>ON VIOLATION FAIL UPDATE</code> added to every pipeline</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Monitoring & Alerting",
+            "question_plain": "A platform team wants to be told automatically when tables in the prod.sales schema stop receiving fresh data or receive far fewer rows than usual, without writing rules for each table.Which feature fits best?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007030,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>Finance wants Databricks costs broken down by team, and each team runs its own jobs. Which approach supports this?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Custom tags on clusters, pools, jobs, and warehouses, and serverless budget policies, are copied to the <code>custom_tags</code> column of <code>system.billing.usage</code>. Grouping by a tag gives cost attribution for chargeback.</p><p>Audit logs don't include costs.</p>",
+                "answers": [
+                    "<p>Turn on audit logging. Audit events include the DBU cost of every command.</p>",
+                    "<p>Parse the job names in <code>system.lakeflow.jobs</code> and estimate costs from run durations.</p>",
+                    "<p>Add a custom tag such as <code>team</code> to job compute (and use budget policies for serverless). Then group <code>system.billing.usage</code> by <code>custom_tags['team']</code>.</p>",
+                    "<p>Use a separate SQL warehouse per team. Billing usage can only be attributed to warehouses.</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Monitoring & Alerting",
+            "question_plain": "Finance wants Databricks costs broken down by team, and each team runs its own jobs. Which approach supports this?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007031,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A multi-task job has slowed down gradually over the last month. The data engineer wants to see, run by run, which task's duration has been growing. Which UI view is the most direct way to see this?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>The matrix view on a job's Runs page puts runs in columns and tasks in rows, with the duration and status of each. Trends and regressions for individual tasks are easy to spot there.</p><p>The Spark UI only covers one run on one cluster.</p>",
+                "answers": [
+                    "<p>The cluster's event log</p>",
+                    "<p>The job's Runs page in matrix view, which shows each task's duration and status across recent runs</p>",
+                    "<p>The Spark UI of the most recent run</p>",
+                    "<p>The SQL warehouse's query history</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Monitoring & Alerting",
+            "question_plain": "A multi-task job has slowed down gradually over the last month. The data engineer wants to see, run by run, which task's duration has been growing. Which UI view is the most direct way to see this?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007032,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>The on-call team wants an email whenever an update of a particular SDP pipeline fails. What is the simplest way to set this up?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Pipelines have their own notification settings. You can send emails for events such as update success, update failure, fatal update failure, and flow failure.</p><p>If the pipeline runs as a task in a job, job-level notifications also work.</p>",
+                "answers": [
+                    "<p>Wrap the pipeline in a notebook that sends an email with <code>smtplib</code></p>",
+                    "<p>Add a notification to the pipeline's settings, with the on-call email and the update failure event selected</p>",
+                    "<p>Write a SQL query against <code>system.billing.usage</code> and create a SQL alert on it</p>",
+                    "<p>Add an expectation with <code>ON VIOLATION FAIL UPDATE</code> to every table</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Monitoring & Alerting",
+            "question_plain": "The on-call team wants an email whenever an update of a particular SDP pipeline fails. What is the simplest way to set this up?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007033,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A platform engineer needs historical CPU and memory use for every node of the classic compute in the account, so they can find clusters that are consistently underused. Which system table provides this?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>system.compute.node_timeline</code> records minute-level resource metrics for each node, such as CPU, memory, and network use. <code>system.compute.clusters</code> only records cluster configurations and how they change over time.</p>",
+                "answers": [
+                    "<p><code>system.billing.list_prices</code></p>",
+                    "<p><code>system.compute.node_timeline</code></p>",
+                    "<p><code>system.lakeflow.job_task_run_timeline</code></p>",
+                    "<p><code>system.compute.clusters</code></p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Monitoring & Alerting",
+            "question_plain": "A platform engineer needs historical CPU and memory use for every node of the classic compute in the account, so they can find clusters that are consistently underused. Which system table provides this?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007034,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A job reads one 2 GB Parquet file on a cluster with 64 cores. The read stage runs with only 16 tasks, which leaves most cores idle. Which setting increases the number of read tasks?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>The number of input splits for file sources depends on <code>spark.sql.files.maxPartitionBytes</code>, which defaults to 128 MB, so 2 GB gives about 16 splits. Lowering the value creates more, smaller input tasks.</p><p>The shuffle partition setting only applies after a shuffle.</p>",
+                "answers": [
+                    "<p>Lower <code>spark.sql.files.maxPartitionBytes</code> (for example to 32 MB)</p>",
+                    "<p>Raise <code>spark.sql.shuffle.partitions</code> to 512</p>",
+                    "<p>Raise <code>spark.sql.autoBroadcastJoinThreshold</code></p>",
+                    "<p>Turn on Change Data Feed on the source</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Cost & Performance Optimization",
+            "question_plain": "A job reads one 2 GB Parquet file on a cluster with 64 cores. The read stage runs with only 16 tasks, which leaves most cores idle. Which setting increases the number of read tasks?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007035,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>On a SQL warehouse, an analyst runs a heavy aggregation query that takes 40 seconds. A minute later, a colleague runs exactly the same query and gets the results almost instantly. No data has changed in between.</p><p>What explains this?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>SQL warehouses cache query results. An identical query on unchanged data can be answered from the cache without running it again. The cache is invalidated when the underlying Delta tables change.</p><p>The disk cache also speeds up later reads of the same files, but it doesn't skip computation.</p>",
+                "answers": [
+                    "<p>The second run used Photon, and the first run didn't.</p>",
+                    "<p>The warehouse automatically created a materialized view after the first run.</p>",
+                    "<p>The query result cache returned the cached results of the identical query, because the underlying tables hadn't changed.</p>",
+                    "<p>Delta automatically Z-ordered the table during the first query.</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Cost & Performance Optimization",
+            "question_plain": "On a SQL warehouse, an analyst runs a heavy aggregation query that takes 40 seconds. A minute later, a colleague runs exactly the same query and gets the results almost instantly. No data has changed in between.What explains this?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007036,
+            "assessment_type": "multi-select",
+            "prompt": {
+                "question": "<p>A batch job writes a Delta table as about 2,000 small files per run. Which two changes would reduce the number of small output files? Choose 2 answers:</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>- <code>coalesce</code> reduces the number of partitions without a full shuffle, so fewer files are written.<br>- Optimized writes rebalance data before writing, so files are fewer and larger.</p><p>More partitions mean more files, and disabling auto compaction removes a mechanism that combines small files.</p>",
+                "answers": [
+                    "<p>Call <code>coalesce(50)</code> on the DataFrame before writing</p>",
+                    "<p>Enable optimized writes (<code>delta.autoOptimize.optimizeWrite = true</code>) on the target table</p>",
+                    "<p>Call <code>repartition(5000)</code> on the DataFrame before writing</p>",
+                    "<p>Disable auto compaction on the target table</p>",
+                    "<p>Increase <code>spark.sql.shuffle.partitions</code> to 4,000</p>"
+                ]
+            },
+            "correct_response": [
+                "a",
+                "b"
+            ],
+            "section": "Cost & Performance Optimization",
+            "question_plain": "A batch job writes a Delta table as about 2,000 small files per run. Which two changes would reduce the number of small output files? Choose 2 answers:",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007037,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A query adds row numbers with the following code, and it runs as one very long task:</p><pre class=\"prettyprint linenums\">df.withColumn(\"rn\", F.row_number().over(Window.orderBy(\"event_ts\")))</pre><p>What is the cause?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>A window with no partitioning gives one global ordering, so all the data goes to a single task. Spark even logs a warning about this.</p><p>Partition the window by a key when you can, or, if you only need unique IDs rather than consecutive ones, use <code>monotonically_increasing_id()</code>.</p>",
+                "answers": [
+                    "<p>Window functions always run on one executor, whatever the window specification.</p>",
+                    "<p>Ordering by a timestamp turns off Adaptive Query Execution.</p>",
+                    "<p>The window has no <code>partitionBy</code>, so Spark moves all rows to a single partition to compute a global order.</p>",
+                    "<p><code>row_number</code> is a Python UDF and runs on the driver.</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Cost & Performance Optimization",
+            "question_plain": "A query adds row numbers with the following code, and it runs as one very long task:df.withColumn(\"rn\", F.row_number().over(Window.orderBy(\"event_ts\")))What is the cause?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007038,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A team has to keep a complex Python function as a UDF, because it can't be written with built-in functions. The UDF is a bottleneck. Which change will most likely improve its performance?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Standard Python UDFs serialize data row by row with pickle. Arrow-based execution, through pandas UDFs or Arrow-optimized Python UDFs, sends columnar batches and greatly reduces serialization cost.</p><p>RDD code loses optimizer benefits. A single partition removes parallelism.</p>",
+                "answers": [
+                    "<p>Set <code>spark.sql.shuffle.partitions</code> to 1 so the UDF runs on one large partition</p>",
+                    "<p>Make it a row-at-a-time <code>@udf</code> with an explicit return type</p>",
+                    "<p>Make it a pandas UDF, or an Arrow-optimized Python UDF (<code>useArrow=True</code>), so data moves between the JVM and Python in vectorized Arrow batches</p>",
+                    "<p>Call the function inside <code>rdd.map()</code> instead of using a DataFrame UDF</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Cost & Performance Optimization",
+            "question_plain": "A team has to keep a complex Python function as a UDF, because it can't be written with built-in functions. The UDF is a bottleneck. Which change will most likely improve its performance?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007039,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A 50 TB Delta table is partitioned by <code>event_date</code>. Only the last 7 days get new writes, and the team wants to compact only those partitions. Which command should they use?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>On a partitioned table, <code>OPTIMIZE</code> takes a <code>WHERE</code> clause that limits compaction to the matching partitions, which avoids reprocessing all the historical data. The predicate can only use partition columns.</p><p>VACUUM removes old files and doesn't compact anything.</p>",
+                "answers": [
+                    "<p><code>OPTIMIZE events WHERE event_date &gt;= current_date() - INTERVAL 7 DAYS</code></p>",
+                    "<p><code>VACUUM events RETAIN 168 HOURS</code></p>",
+                    "<p><code>OPTIMIZE events WHERE user_id IS NOT NULL</code></p>",
+                    "<p><code>OPTIMIZE events</code></p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Cost & Performance Optimization",
+            "question_plain": "A 50 TB Delta table is partitioned by event_date. Only the last 7 days get new writes, and the team wants to compact only those partitions. Which command should they use?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007040,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A streaming SDP pipeline gets highly variable traffic: steady most of the day, with large spikes at peak hours. The team wants compute to follow the load without being over-provisioned.</p><p>What should they configure?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Enhanced autoscaling is built for streaming workloads. It adds or removes workers based on task slot use and backlog, and shuts down underused nodes without disrupting processing. Serverless pipelines manage this for you.</p><p>A fixed cluster sized for the peak wastes money the rest of the day.</p>",
+                "answers": [
+                    "<p>A new pipeline that is started manually before each peak</p>",
+                    "<p>Standard cluster autoscaling with the minimum and maximum workers set to the same value</p>",
+                    "<p>A fixed-size cluster sized for the peak load</p>",
+                    "<p>Enhanced autoscaling for the pipeline (or serverless pipelines), which scales on streaming backlog and utilization</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Cost & Performance Optimization",
+            "question_plain": "A streaming SDP pipeline gets highly variable traffic: steady most of the day, with large spikes at peak hours. The team wants compute to follow the load without being over-provisioned.What should they configure?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007041,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A production job currently runs as the engineer who created it. What is the recommended change, so the job keeps running when people leave and doesn't run with an individual's broad permissions?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>A service principal is an identity for automation. Running production workloads as a service principal separates them from any one person, supports least privilege, and keeps them working when staff change. Set it through <code>run_as</code> in the job or in bundles.</p><p>Sharing a personal token or giving everyone admin rights goes against security best practice.</p>",
+                "answers": [
+                    "<p>Run the job on a cluster in no isolation shared access mode</p>",
+                    "<p>Share the engineer's personal access token with the team</p>",
+                    "<p>Set the job's Run as identity to a service principal that has only the privileges the job needs</p>",
+                    "<p>Make every job owner a workspace admin</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Security & Compliance",
+            "question_plain": "A production job currently runs as the engineer who created it. What is the recommended change, so the job keeps running when people leave and doesn't run with an individual's broad permissions?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007042,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>An external orchestrator such as Airflow must call the Databricks REST API to trigger jobs. Which authentication approach is recommended?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>For unattended automation, Databricks recommends OAuth M2M with service principals, or workload identity federation, which avoids long-lived secrets. Tokens are short-lived and are refreshed for you by the SDKs and CLI.</p><p>Long-lived personal tokens tied to a user are discouraged, and basic authentication with passwords isn't supported.</p>",
+                "answers": [
+                    "<p>The workspace admin's username and password, using basic authentication</p>",
+                    "<p>A personal access token created by a data engineer, with no expiration</p>",
+                    "<p>An anonymous request from an allowed IP address</p>",
+                    "<p>OAuth machine-to-machine (M2M) with a service principal's client ID and secret (or workload identity federation), so short-lived tokens are issued automatically</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Security & Compliance",
+            "question_plain": "An external orchestrator such as Airflow must call the Databricks REST API to trigger jobs. Which authentication approach is recommended?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007043,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A newly acquired business unit loaded hundreds of tables into Unity Catalog, and nobody knows which columns hold sensitive data such as emails or credit card numbers. The governance team wants these columns found and tagged automatically.</p><p>Which feature should they use?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Unity Catalog data classification uses automated detection to find sensitive data types in tables and tags the columns that contain them. Those tags can then drive ABAC masking policies.</p><p>File statistics only hold min, max, and null counts.</p>",
+                "answers": [
+                    "<p>Lakehouse Federation, which classifies data in foreign catalogs</p>",
+                    "<p><code>DESCRIBE HISTORY</code>, which lists the PII columns written in each commit</p>",
+                    "<p>Data classification in Unity Catalog, which scans tables, detects sensitive data, and suggests or applies tags</p>",
+                    "<p>Delta Lake file statistics, which flag columns that contain PII</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Security & Compliance",
+            "question_plain": "A newly acquired business unit loaded hundreds of tables into Unity Catalog, and nobody knows which columns hold sensitive data such as emails or credit card numbers. The governance team wants these columns found and tagged automatically.Which feature should they use?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007044,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>Security policy says the Databricks workspace UI and REST APIs may only be reached from the corporate network ranges. What should the workspace admin configure?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>IP access lists restrict which source IP addresses can reach the workspace's web application and REST APIs. Private connectivity (Private Link) can add further network isolation.</p><p>Row filters, cluster policies, and secret ACLs control different things.</p>",
+                "answers": [
+                    "<p>A row filter on every table that checks the client IP address</p>",
+                    "<p>Cluster policies that require a particular instance type</p>",
+                    "<p>Secret ACLs on every secret scope</p>",
+                    "<p>Workspace IP access lists that allow only the corporate IP ranges</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Security & Compliance",
+            "question_plain": "Security policy says the Databricks workspace UI and REST APIs may only be reached from the corporate network ranges. What should the workspace admin configure?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007045,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>The table <code>users</code> has Change Data Feed enabled. A data engineer deletes one user's rows to meet an erasure request. Where can that user's data still be found until it is cleaned up?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>DELETE creates a new table version. Older data files are still reachable through time travel, and with CDF enabled the delete event itself, including the row's values, is written to the change data files. <code>VACUUM</code> removes those files once they are past the retention threshold.</p><p>The transaction log records file paths and metadata, not row data.</p>",
+                "answers": [
+                    "<p>Only in the <code>_delta_log</code> JSON commit files, which keep a full copy of every row</p>",
+                    "<p>In older table versions (through time travel) and in the Change Data Feed files under <code>_change_data</code>, until <code>VACUUM</code> removes them after the retention period</p>",
+                    "<p>Only in the Spark UI of the cluster that ran the DELETE</p>",
+                    "<p>Nowhere. A DELETE immediately removes the data from all files and logs.</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Security & Compliance",
+            "question_plain": "The table users has Change Data Feed enabled. A data engineer deletes one user's rows to meet an erasure request. Where can that user's data still be found until it is cleaned up?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007046,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>The governance team wants all employees to be able to find tables in the <code>analytics</code> catalog through Catalog Explorer and search, and to see their metadata, so they can request access. They must not be able to read any data.</p><p>Which privilege should be granted?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>BROWSE</code> lets users see object metadata in Catalog Explorer, search, and lineage, and request access, without reading data.</p><p><code>SELECT</code> grants read access to data. <code>MANAGE</code> lets users manage privileges on the object.</p>",
+                "answers": [
+                    "<p><code>MANAGE</code> on the <code>analytics</code> catalog</p>",
+                    "<p><code>SELECT</code> on the <code>analytics</code> catalog</p>",
+                    "<p><code>USE CATALOG</code> and <code>USE SCHEMA</code> on all schemas in <code>analytics</code></p>",
+                    "<p><code>BROWSE</code> on the <code>analytics</code> catalog</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Data Governance",
+            "question_plain": "The governance team wants all employees to be able to find tables in the analytics catalog through Catalog Explorer and search, and to see their metadata, so they can request access. They must not be able to read any data.Which privilege should be granted?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007047,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A production job running as the service principal <code>sp-etl</code> creates a new table with <code>CREATE TABLE</code>. Who owns the new table?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>In Unity Catalog, the principal that creates an object becomes its owner. Because the job runs as <code>sp-etl</code>, the service principal owns the table. You can transfer ownership later with <code>ALTER ... OWNER TO</code>, for example to a group.</p>",
+                "answers": [
+                    "<p>The user who created the job</p>",
+                    "<p>Nobody, until ownership is assigned explicitly</p>",
+                    "<p>The metastore admin</p>",
+                    "<p>The service principal <code>sp-etl</code>, since the principal that creates an object becomes its owner</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Data Governance",
+            "question_plain": "A production job running as the service principal sp-etl creates a new table with CREATE TABLE. Who owns the new table?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007048,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>Analysts get a permission error when they query <code>system.billing.usage</code>, even though the system schemas are enabled. What is needed?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>System tables live in the Unity Catalog <code>system</code> catalog and are governed like any other table. Admins grant access with the normal <code>USE CATALOG</code>, <code>USE SCHEMA</code>, and <code>SELECT</code> privileges, usually to specific groups because the data is sensitive.</p>",
+                "answers": [
+                    "<p>The analysts must use a cluster in dedicated access mode, because system tables can't be queried any other way.</p>",
+                    "<p>An admin (or another user with the right privileges) must grant <code>USE CATALOG</code> on <code>system</code>, <code>USE SCHEMA</code> on <code>system.billing</code>, and <code>SELECT</code> on the table (or schema) to the analysts.</p>",
+                    "<p>System tables can only be read by account admins, so nobody else can ever be given access.</p>",
+                    "<p>The analysts must enable Change Data Feed on <code>system.billing.usage</code>.</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Data Governance",
+            "question_plain": "Analysts get a permission error when they query system.billing.usage, even though the system schemas are enabled. What is needed?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007049,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>How do governed tags differ from ordinary tags in Unity Catalog?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Governed tags let admins define a tag key, its allowed values, and who may assign it. This makes tags reliable enough to drive ABAC policies and data classification. Masking or filtering still needs a policy that references the tag.</p>",
+                "answers": [
+                    "<p>Governed tags are defined at the account level with a policy for allowed values and for who can assign them, which keeps tagging consistent. Ordinary tags are free-form key/value pairs.</p>",
+                    "<p>Only governed tags can be added to columns. Ordinary tags can only be added to catalogs.</p>",
+                    "<p>Governed tags mask data automatically without any policy or function.</p>",
+                    "<p>Governed tags are stored in Delta file statistics, and ordinary tags are stored in the metastore.</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Data Governance",
+            "question_plain": "How do governed tags differ from ordinary tags in Unity Catalog?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007050,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>The view <code>sales.reporting.v_revenue</code> reads from the table <code>sales.core.orders</code>. An analyst has <code>USE CATALOG</code>, <code>USE SCHEMA</code> on <code>sales.reporting</code>, and <code>SELECT</code> on the view, but no privileges on <code>sales.core</code>. The view's owner can read <code>orders</code>.</p><p>What happens when the analyst queries the view?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>In Unity Catalog, a view is resolved with its owner's privileges on the objects it references. Consumers need <code>SELECT</code> on the view, plus <code>USE CATALOG</code> and <code>USE SCHEMA</code> on its parents, but no access to the underlying tables. That's why views work for exposing curated subsets of data.</p>",
+                "answers": [
+                    "<p>The query fails, because the analyst also needs <code>SELECT</code> on <code>sales.core.orders</code>.</p>",
+                    "<p>The query returns only the rows the analyst inserted.</p>",
+                    "<p>The query succeeds only if the analyst has <code>MODIFY</code> on the view.</p>",
+                    "<p>The query succeeds. The view's owner's privileges are used to read the underlying table, so the analyst doesn't need access to <code>orders</code>.</p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Data Governance",
+            "question_plain": "The view sales.reporting.v_revenue reads from the table sales.core.orders. An analyst has USE CATALOG, USE SCHEMA on sales.reporting, and SELECT on the view, but no privileges on sales.core. The view's owner can read orders.What happens when the analyst queries the view?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007051,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>Before deploying a Declarative Automation Bundle from CI, the team wants to catch configuration errors such as invalid YAML, unknown fields, or unresolved variables, without changing anything in the workspace.</p><p>Which command should they run?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>bundle validate</code> checks the bundle configuration and resolves variables for the target, and reports errors and warnings without deploying anything. Running it as a CI step catches mistakes early.</p><p><code>run</code> executes resources, and <code>destroy</code> deletes them.</p>",
+                "answers": [
+                    "<p><code>databricks bundle validate -t prod</code></p>",
+                    "<p><code>databricks bundle deploy -t prod --dry-run-all</code></p>",
+                    "<p><code>databricks bundle run -t prod</code></p>",
+                    "<p><code>databricks bundle destroy -t prod</code></p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Debugging & Deploying",
+            "question_plain": "Before deploying a Declarative Automation Bundle from CI, the team wants to catch configuration errors such as invalid YAML, unknown fields, or unresolved variables, without changing anything in the workspace.Which command should they run?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007052,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A feature environment was deployed from a bundle to the <code>feature-x</code> target, and the feature has been abandoned. Which command removes everything that bundle deployed for that target?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p><code>bundle destroy</code> removes the jobs, pipelines, and other resources deployed for the target, along with the deployment's files and state. It asks for confirmation unless you pass <code>--auto-approve</code>.</p><p>The other commands either don't exist as written or would delete far more than intended.</p>",
+                "answers": [
+                    "<p><code>databricks bundle deploy -t feature-x --delete</code></p>",
+                    "<p><code>databricks jobs delete --all</code></p>",
+                    "<p><code>databricks workspace delete /Workspace --recursive</code></p>",
+                    "<p><code>databricks bundle destroy -t feature-x</code></p>"
+                ]
+            },
+            "correct_response": [
+                "d"
+            ],
+            "section": "Debugging & Deploying",
+            "question_plain": "A feature environment was deployed from a bundle to the feature-x target, and the feature has been abandoned. Which command removes everything that bundle deployed for that target?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007053,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A bundle deploys a job with a Python wheel task. The wheel should be built from the project source during <code>databricks bundle deploy</code> and uploaded with the deployment. How is this configured?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>The <code>artifacts</code> section tells the CLI to build the package, for example a Python wheel, during deployment and upload it to the workspace. Tasks then refer to it, for example as <code>./dist/*.whl</code> in <code>libraries</code>. This makes builds reproducible and versioned with the code.</p>",
+                "answers": [
+                    "<p>Define the wheel in the bundle's <code>artifacts</code> mapping (type <code>whl</code>, with a build command or <code>pyproject.toml</code>), and reference the built wheel in the task's <code>libraries</code>.</p>",
+                    "<p>Put the wheel's source code in the <code>variables</code> section of <code>databricks.yml</code>.</p>",
+                    "<p>Build the wheel by hand, upload it to DBFS root, and hard-code the path in the job.</p>",
+                    "<p>Add <code>pip install .</code> to an init script on the job cluster.</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Debugging & Deploying",
+            "question_plain": "A bundle deploys a job with a Python wheel task. The wheel should be built from the project source during databricks bundle deploy and uploaded with the deployment. How is this configured?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007054,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A team already has a tested ingestion job. They are building an orchestration job that should run that ingestion job as one step, and then run reporting tasks after it.</p><p>Which task type should they use for the ingestion step?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>The Run Job task triggers another job as a step and waits for it to finish. You can pass job parameters to it, and its outcome drives downstream dependencies. This lets you reuse jobs without copying their tasks.</p>",
+                "answers": [
+                    "<p>A Run Job task that triggers the existing ingestion job</p>",
+                    "<p>An If/else condition task that refers to the ingestion job's ID</p>",
+                    "<p>A notebook task that calls <code>dbutils.notebook.run()</code> on each ingestion notebook</p>",
+                    "<p>A For each task that loops over the ingestion job's tasks</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Debugging & Deploying",
+            "question_plain": "A team already has a tested ingestion job. They are building an orchestration job that should run that ingestion job as one step, and then run reporting tasks after it.Which task type should they use for the ingestion step?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007055,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>In a multi-task job, each of six sequential tasks starts its own new job cluster, and cluster startup accounts for almost half of the job's runtime. How can startup overhead be reduced while still using jobs compute?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Tasks in a job can share a job cluster defined at the job level, so the cluster starts once and serves several tasks, then terminates when the run ends. Serverless jobs compute removes startup delays too.</p><p>All-purpose clusters cost more per DBU and are meant for interactive work.</p>",
+                "answers": [
+                    "<p>Add a 5-minute retry delay to every task</p>",
+                    "<p>Change every task to use an all-purpose cluster that stays running</p>",
+                    "<p>Configure one shared job cluster and assign all six tasks to it</p>",
+                    "<p>Split the job into six separate jobs</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Debugging & Deploying",
+            "question_plain": "In a multi-task job, each of six sequential tasks starts its own new job cluster, and cluster startup accounts for almost half of the job's runtime. How can startup overhead be reduced while still using jobs compute?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007056,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A data engineer edited the source code of a large SDP pipeline and wants to check for problems such as missing tables or invalid references, without updating any tables or processing data. What should they do?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>A validate update analyzes the pipeline's source code and checks the dataflow graph for errors, such as syntax and analysis problems or missing dependencies, without materializing data. It's a quick, safe check before a real update.</p>",
+                "answers": [
+                    "<p>Switch the pipeline to continuous mode</p>",
+                    "<p>Run a validate update of the pipeline</p>",
+                    "<p>Run a full refresh of all tables</p>",
+                    "<p>Delete the pipeline's event log, then start a new update</p>"
+                ]
+            },
+            "correct_response": [
+                "b"
+            ],
+            "section": "Debugging & Deploying",
+            "question_plain": "A data engineer edited the source code of a large SDP pipeline and wants to check for problems such as missing tables or invalid references, without updating any tables or processing data. What should they do?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007057,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A job defines the job-level parameter <code>env = prod</code>. One of its notebook tasks also defines a task parameter <code>env = dev</code>. What value does <code>dbutils.widgets.get(\"env\")</code> return in that task?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Job parameters apply to the whole job and are passed automatically to every task that accepts parameters. If a task parameter has the same key, the job parameter value wins. To control a value per task, give it a different key or use dynamic value references.</p>",
+                "answers": [
+                    "<p><code>dev</code>, because task parameters always override job parameters</p>",
+                    "<p>An error, because keys can't be duplicated</p>",
+                    "<p><code>prod</code>, because job parameters are pushed down to all tasks and take precedence over task parameters with the same key</p>",
+                    "<p><code>prod,dev</code>, because the values are concatenated</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Debugging & Deploying",
+            "question_plain": "A job defines the job-level parameter env = prod. One of its notebook tasks also defines a task parameter env = dev. What value does dbutils.widgets.get(\"env\") return in that task?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007058,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>Bronze order records contain a nested <code>line_items</code> array. The silver layer has to support analytics on both orders and line items. Which modeling approach is most common?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Normalizing one-to-many nested data into a child table keyed by the parent ID gives clean grain for each entity. Joins and aggregations become simple, and line-item queries don't need to explode the array each time.</p><p>Fixed position columns and string concatenation don't scale and are hard to query.</p>",
+                "answers": [
+                    "<p>Create an <code>orders</code> silver table, and a <code>order_line_items</code> silver table built by exploding the array, with <code>order_id</code> as the parent key</p>",
+                    "<p>Create one silver table for each possible array position (<code>item_1</code>, <code>item_2</code>, and so on)</p>",
+                    "<p>Turn the array into a comma-separated string column</p>",
+                    "<p>Keep the array nested in the orders table, and make every consumer explode it in each query</p>"
+                ]
+            },
+            "correct_response": [
+                "a"
+            ],
+            "section": "Data Modeling",
+            "question_plain": "Bronze order records contain a nested line_items array. The silver layer has to support analytics on both orders and line items. Which modeling approach is most common?",
+            "related_lectures": []
+        },
+        {
+            "_class": "assessment",
+            "id": 990007059,
+            "assessment_type": "multiple-choice",
+            "prompt": {
+                "question": "<p>A retailer needs to analyze inventory on hand for each product and store at the end of each day, and trend it over months. Which type of fact table fits best?</p>",
+                "relatedLectureIds": [],
+                "links": [],
+                "feedbacks": [
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "explanation": "<p>Periodic snapshot facts record the state of measures, such as inventory levels or balances, at regular intervals, which makes trend queries simple.</p><p>Transactional facts record individual events, and rebuilding daily levels from them means summing every movement. Factless facts record events that have no measures.</p>",
+                "answers": [
+                    "<p>A transactional fact table with one row per inventory movement only</p>",
+                    "<p>A factless fact table</p>",
+                    "<p>A periodic snapshot fact table with one row per product, store, and day</p>",
+                    "<p>An SCD Type 2 dimension of products</p>"
+                ]
+            },
+            "correct_response": [
+                "c"
+            ],
+            "section": "Data Modeling",
+            "question_plain": "A retailer needs to analyze inventory on hand for each product and store at the end of each day, and trend it over months. Which type of fact table fits best?",
+            "related_lectures": []
+        }
+    ]
+}

@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DE Pro Practice</title>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--text:#1d2330;--muted:#667085;--line:#e3e6eb;
+  --accent:#e8492f;--accent-weak:#fdece8;--ok:#14804a;--ok-weak:#e6f4ec;
+  --bad:#c2312a;--bad-weak:#fbeaea;--warn:#b7791f;--warn-weak:#fdf4e3;--code:#f2f4f7;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#12141a;--card:#1b1e26;--text:#e6e8ee;--muted:#9aa1b1;--line:#2c313c;
+  --accent:#ff6a4d;--accent-weak:#3a221d;--ok:#3ccf7f;--ok-weak:#16301f;
+  --bad:#ff6b63;--bad-weak:#3a1d1c;--warn:#f0b44c;--warn-weak:#352a15;--code:#232733;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:17px;margin:0 0 12px}
+.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:14px 0}
+button{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:8px 14px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+.hidden{display:none!important}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;cursor:pointer}
+.drop.over{border-color:var(--accent);background:var(--accent-weak)}
+.exam-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.exam-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.exam-item.sel{border-color:var(--accent);background:var(--accent-weak)}
+.exam-item small{display:block;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;border-radius:0}
+.seg button.on{background:var(--accent);color:#fff}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line)}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--code);font-size:12.5px;color:var(--muted)}
+.q-body pre,.exp pre{background:var(--code);padding:10px 12px;border-radius:8px;overflow-x:auto;font:13px/1.45 ui-monospace,Consolas,monospace;white-space:pre}
+.q-body code,.exp code,.opt code{background:var(--code);padding:1px 5px;border-radius:4px;font:13px ui-monospace,Consolas,monospace}
+.q-body img,.exp img{max-width:100%;height:auto}
+.q-body p,.exp p{margin:.4em 0}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt.sel{border-color:var(--accent);background:var(--accent-weak)}
+.opt.correct{border-color:var(--ok);background:var(--ok-weak)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-weak)}
+.opt.locked{cursor:default}
+.opt .key{flex:none;width:26px;height:26px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center;font-weight:600;font-size:13px}
+.opt.sel .key{background:var(--accent);color:#fff;border-color:var(--accent)}
+.opt.correct .key{background:var(--ok);color:#fff;border-color:var(--ok)}
+.opt.wrong .key{background:var(--bad);color:#fff;border-color:var(--bad)}
+.opt .txt{min-width:0;flex:1}
+.opt .txt p{margin:0}
+.opt pre{margin:0;white-space:pre-wrap;font:13px/1.45 ui-monospace,Consolas,monospace}
+.verdict{font-weight:600;margin:14px 0 6px}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
+.exp{border-left:3px solid var(--accent);padding:4px 0 4px 12px;margin-top:8px}
+.nav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:6px}
+.nav-grid button{padding:5px 0;font-size:13px}
+.nav-grid button.ans{background:var(--code)}
+.nav-grid button.cur{border-color:var(--accent);border-width:2px}
+.nav-grid button.flag{box-shadow:inset 0 -3px 0 var(--warn)}
+.nav-grid button.ok{background:var(--ok-weak);border-color:var(--ok)}
+.nav-grid button.bad{background:var(--bad-weak);border-color:var(--bad)}
+.score{font-size:42px;font-weight:700;line-height:1}
+.pass{color:var(--ok)} .fail{color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+td.num,th.num{text-align:right;white-space:nowrap}
+.bar{height:7px;background:var(--code);border-radius:9px;overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.hist{font-size:13px}
+.kbd{font:12px ui-monospace,Consolas,monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+@media (max-width:600px){.score{font-size:34px}.card{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HOME -->
+<section id="home">
+  <h1>Databricks DE Professional practice</h1>
+  <p class="muted">Load your exam JSON files. They are read in your browser and never uploaded.</p>
+
+  <div class="card">
+    <div id="drop" class="drop">
+      <strong>Drop <code>exam-*.json</code> files here</strong> or click to choose
+      <input id="file" type="file" accept=".json,application/json" multiple hidden>
+    </div>
+    <div id="examList" class="exam-list" style="margin-top:14px"></div>
+  </div>
+
+  <div id="setup" class="card hidden">
+    <h2>Setup</h2>
+    <div class="row" style="margin-bottom:12px">
+      <span>Mode</span>
+      <div class="seg" id="modeSeg">
+        <button data-mode="test" class="on">Test: feedback after each question</button>
+        <button data-mode="exam">Exam: results at the end</button>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:12px">
+      <label class="chk"><input type="checkbox" id="optShuffle"> Shuffle question order</label>
+      <label class="chk" id="timerWrap"><input type="checkbox" id="optTimer" checked> Timer, minutes: <input id="optMinutes" type="number" value="120" min="5" max="300" style="width:64px"></label>
+    </div>
+    <div class="row">
+      <button class="primary" id="startBtn">Start</button>
+      <span class="muted" id="setupInfo"></span>
+    </div>
+  </div>
+
+  <div id="historyCard" class="card hidden">
+    <div class="row"><h2 style="margin:0">Recent attempts</h2><span class="spacer"></span><button id="clearHist">Clear</button></div>
+    <table class="hist" id="histTable"></table>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="hidden">
+  <div class="topbar">
+    <div class="row">
+      <strong id="qTitle"></strong>
+      <span class="pill" id="qMode"></span>
+      <span class="spacer"></span>
+      <span class="pill" id="qScore"></span>
+      <span class="pill" id="qTimer"></span>
+      <button id="quitBtn">Quit</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:8px">
+      <span class="muted" id="qNum"></span>
+      <span class="pill" id="qSection"></span>
+      <span class="spacer"></span>
+      <label class="chk muted"><input type="checkbox" id="flagChk"> Flag</label>
+    </div>
+    <div class="q-body" id="qBody"></div>
+    <div class="muted" id="qHint" style="margin-top:8px;font-size:13px"></div>
+    <div class="opts" id="qOpts"></div>
+    <div id="feedback"></div>
+    <div class="row" style="margin-top:16px">
+      <button id="prevBtn">← Prev</button>
+      <span class="spacer"></span>
+      <button class="primary" id="submitBtn">Submit</button>
+      <button id="nextBtn">Next →</button>
+      <button class="primary hidden" id="finishBtn">Finish exam</button>
+    </div>
+    <p class="muted" style="font-size:12.5px;margin:12px 0 0">Keys: <span class="kbd">A</span>–<span class="kbd">E</span> or <span class="kbd">1</span>–<span class="kbd">5</span> select · <span class="kbd">Enter</span> submit / next · <span class="kbd">←</span> <span class="kbd">→</span> navigate · <span class="kbd">F</span> flag</p>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:8px"><strong>Questions</strong><span class="spacer"></span><button id="finishBtn2">Finish</button></div>
+    <div class="nav-grid" id="navGrid"></div>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="hidden">
+  <div class="card">
+    <div class="row">
+      <div>
+        <div class="muted" id="rTitle"></div>
+        <div class="score" id="rScore"></div>
+        <div id="rDetail" class="muted"></div>
+      </div>
+      <span class="spacer"></span>
+      <div class="row">
+        <button id="retryWrongBtn">Retry incorrect</button>
+        <button id="retryAllBtn">Retake</button>
+        <button class="primary" id="homeBtn">Home</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>By domain</h2>
+    <table id="domainTable"></table>
+  </div>
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <h2 style="margin:0">Review</h2><span class="spacer"></span>
+      <div class="seg" id="reviewSeg">
+        <button data-f="wrong" class="on">Incorrect</button>
+        <button data-f="flag">Flagged</button>
+        <button data-f="all">All</button>
+      </div>
+    </div>
+    <div id="reviewList"></div>
+  </div>
+</section>
+
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const LETTERS = "abcde";
+const PASS = 0.7;
+const HKEY = "depro_quiz_history";
+
+let exams = {};          // name -> results[]
+let selected = null;
+let mode = "test";
+let S = null;            // session
+
+// ---------- storage (safe) ----------
+function loadHist(){ try{ return JSON.parse(localStorage.getItem(HKEY)) || []; }catch{ return []; } }
+function saveHist(h){ try{ localStorage.setItem(HKEY, JSON.stringify(h.slice(0,50))); }catch{} }
+
+// ---------- loading ----------
+const drop = $("#drop"), fileIn = $("#file");
+drop.onclick = () => fileIn.click();
+fileIn.onchange = e => loadFiles(e.target.files);
+drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave = () => drop.classList.remove("over");
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); loadFiles(e.dataTransfer.files); };
+
+async function loadFiles(files){
+  for (const f of files){
+    try{
+      const d = JSON.parse(await f.text());
+      const qs = Array.isArray(d) ? d : d.results;
+      if (!Array.isArray(qs) || !qs.length || !qs[0].prompt) throw 0;
+      exams[f.name.replace(/\.json$/i,"")] = qs;
+    }catch{ alert(`Couldn't read ${f.name}. Expected the practice-test JSON format.`); }
+  }
+  renderExamList();
+}
+
+function renderExamList(){
+  const names = Object.keys(exams).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  $("#examList").innerHTML = names.map(n =>
+    `<div class="exam-item ${n===selected?"sel":""}" data-n="${n}"><strong>${n}</strong><small>${exams[n].length} questions</small></div>`).join("");
+  document.querySelectorAll(".exam-item").forEach(el => el.onclick = () => { selected = el.dataset.n; renderExamList(); });
+  if (!selected && names.length) { selected = names[0]; return renderExamList(); }
+  $("#setup").classList.toggle("hidden", !selected);
+  if (selected) $("#setupInfo").textContent = `${selected}: ${exams[selected].length} questions, pass mark ${PASS*100}%`;
+}
+
+document.querySelectorAll("#modeSeg button").forEach(b => b.onclick = () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll("#modeSeg button").forEach(x => x.classList.toggle("on", x===b));
+  $("#optTimer").checked = mode === "exam";
+});
+$("#optTimer").checked = false;
+
+// ---------- session ----------
+$("#startBtn").onclick = () => start(exams[selected].map((_,i)=>i));
+
+function start(indices){
+  const order = [...indices];
+  if ($("#optShuffle").checked) for (let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
+  const mins = Math.max(1, +$("#optMinutes").value || 120);
+  S = { name:selected, qs:exams[selected], order, mode, idx:0,
+        ans:{}, done:{}, flag:{}, t0:Date.now(),
+        limit: $("#optTimer").checked ? mins*60*1000 : 0 };
+  show("quiz");
+  clearInterval(S.tick); S.tick = setInterval(tickTimer, 1000); tickTimer();
+  render();
+}
+
+function show(id){ ["home","quiz","result"].forEach(s => $("#"+s).classList.toggle("hidden", s!==id)); window.scrollTo(0,0); }
+
+const cur = () => S.qs[S.order[S.idx]];
+const nCorrect = q => q.correct_response.length;
+const isRight = (q, sel) => { const c=[...q.correct_response].sort().join(), s=[...(sel||[])].sort().join(); return c===s; };
+const fmt = ms => { const t=Math.max(0,Math.round(ms/1000)); const h=Math.floor(t/3600), m=Math.floor(t%3600/60), s=t%60; return (h?h+":":"")+String(m).padStart(h?2:1,"0")+":"+String(s).padStart(2,"0"); };
+
+function tickTimer(){
+  if (!S) return;
+  const el = Date.now()-S.t0;
+  if (S.limit){
+    const left = S.limit-el;
+    $("#qTimer").textContent = "⏱ " + fmt(left);
+    $("#qTimer").style.color = left < 5*60*1000 ? "var(--bad)" : "";
+    if (left <= 0){ clearInterval(S.tick); alert("Time is up. Submitting your exam."); finish(); }
+  } else $("#qTimer").textContent = "⏱ " + fmt(el);
+}
+
+function render(){
+  const q = cur(), k = nCorrect(q), i = S.order[S.idx];
+  const locked = S.mode==="test" && S.done[i];
+  const sel = S.ans[i] || [];
+  $("#qTitle").textContent = S.name;
+  $("#qMode").textContent = S.mode==="test" ? "Test mode" : "Exam mode";
+  $("#qNum").textContent = `Question ${S.idx+1} of ${S.order.length}`;
+  $("#qSection").textContent = q.section || "General";
+  $("#qSection").classList.toggle("hidden", !q.section);
+  $("#qBody").innerHTML = q.prompt.question;
+  $("#qHint").textContent = k>1 ? `Select ${k} answers.` : "";
+  $("#flagChk").checked = !!S.flag[i];
+
+  $("#qOpts").innerHTML = q.prompt.answers.map((a,j) => {
+    const L = LETTERS[j];
+    let cls = sel.includes(L) ? "sel" : "";
+    if (locked){
+      cls = "locked " + (q.correct_response.includes(L) ? "correct" : sel.includes(L) ? "wrong" : "");
+    }
+    return `<div class="opt ${cls}" data-l="${L}"><span class="key">${L.toUpperCase()}</span><div class="txt">${a}</div></div>`;
+  }).join("");
+  document.querySelectorAll("#qOpts .opt").forEach(el => el.onclick = () => pick(el.dataset.l));
+
+  $("#feedback").innerHTML = locked ? feedbackHTML(q, sel) : "";
+
+  // buttons
+  $("#prevBtn").disabled = S.idx===0;
+  const last = S.idx===S.order.length-1;
+  if (S.mode==="test"){
+    $("#submitBtn").classList.toggle("hidden", locked);
+    $("#submitBtn").disabled = sel.length !== k;
+    $("#nextBtn").classList.toggle("hidden", !locked && !last ? false : false);
+    $("#nextBtn").textContent = last ? "Results" : "Next →";
+    $("#finishBtn").classList.add("hidden");
+  } else {
+    $("#submitBtn").classList.add("hidden");
+    $("#nextBtn").classList.toggle("hidden", last);
+    $("#nextBtn").textContent = "Next →";
+    $("#finishBtn").classList.toggle("hidden", !last);
+  }
+  updateScore();
+  renderNav();
+}
+
+function feedbackHTML(q, sel){
+  const ok = isRight(q, sel);
+  const corr = q.correct_response.map(x=>x.toUpperCase()).join(", ");
+  return `<div class="verdict ${ok?"ok":"bad"}">${ok?"✓ Correct":"✗ Incorrect. Correct answer: "+corr}</div>
+          ${q.prompt.explanation ? `<div class="exp">${q.prompt.explanation}</div>` : ""}`;
+}
+
+function pick(L){
+  const q = cur(), i = S.order[S.idx], k = nCorrect(q);
+  if (S.mode==="test" && S.done[i]) return;
+  let sel = S.ans[i] ? [...S.ans[i]] : [];
+  if (k===1) sel = [L];
+  else if (sel.includes(L)) sel = sel.filter(x=>x!==L);
+  else { sel.push(L); if (sel.length>k) sel.shift(); }
+  S.ans[i] = sel;
+  render();
+}
+
+function submit(){
+  const q = cur(), i = S.order[S.idx];
+  if (S.mode!=="test" || S.done[i] || (S.ans[i]||[]).length !== nCorrect(q)) return;
+  S.done[i] = true; render();
+}
+
+function go(d){
+  const n = S.idx + d;
+  if (n<0) return;
+  if (n>=S.order.length){ if (S.mode==="test") finishAsk(); return; }
+  S.idx = n; render(); window.scrollTo({top:0});
+}
+
+function updateScore(){
+  if (S.mode==="test"){
+    const done = S.order.filter(i=>S.done[i]);
+    const right = done.filter(i=>isRight(S.qs[i], S.ans[i])).length;
+    $("#qScore").textContent = `${right}/${done.length} correct`;
+  } else {
+    const a = S.order.filter(i=>(S.ans[i]||[]).length).length;
+    $("#qScore").textContent = `${a}/${S.order.length} answered`;
+  }
+}
+
+function renderNav(){
+  $("#navGrid").innerHTML = S.order.map((i,p) => {
+    let c = "";
+    if (S.mode==="test" && S.done[i]) c = isRight(S.qs[i], S.ans[i]) ? "ok" : "bad";
+    else if ((S.ans[i]||[]).length) c = "ans";
+    if (S.flag[i]) c += " flag";
+    if (p===S.idx) c += " cur";
+    return `<button class="${c}" data-p="${p}">${p+1}</button>`;
+  }).join("");
+  document.querySelectorAll("#navGrid button").forEach(b => b.onclick = () => { S.idx=+b.dataset.p; render(); });
+}
+
+function finishAsk(){
+  const un = S.mode==="test"
+    ? S.order.filter(i=>!S.done[i]).length
+    : S.order.filter(i=>!(S.ans[i]||[]).length).length;
+  const msg = un ? `${un} question(s) ${S.mode==="test"?"not submitted":"unanswered"}. They will count as incorrect. Finish now?` : "Finish and see results?";
+  if (confirm(msg)) finish();
+}
+
+function finish(){
+  clearInterval(S.tick);
+  const qs = S.order.map(i => ({ i, q:S.qs[i], sel:S.ans[i]||[], ok:isRight(S.qs[i], S.ans[i]),
+           counted: S.mode==="exam" || S.done[i] }));
+  const right = qs.filter(x=>x.ok && x.counted).length, total = qs.length;
+  const pct = right/total;
+  S.result = qs;
+  $("#rTitle").textContent = `${S.name} · ${S.mode==="test"?"Test":"Exam"} mode`;
+  $("#rScore").innerHTML = `<span class="${pct>=PASS?"pass":"fail"}">${Math.round(pct*100)}%</span>`;
+  $("#rDetail").textContent = `${right} / ${total} correct · ${pct>=PASS?"PASS":"FAIL"} (pass mark ${PASS*100}%) · time ${fmt(Date.now()-S.t0)}`;
+
+  // domains
+  const dom = {};
+  qs.forEach(x => { const d = x.q.section || "General"; dom[d] ??= {r:0,t:0}; dom[d].t++; if (x.ok && x.counted) dom[d].r++; });
+  $("#domainTable").innerHTML = `<tr><th>Domain</th><th class="num">Score</th><th></th></tr>` +
+    Object.entries(dom).sort((a,b)=>a[1].r/a[1].t - b[1].r/b[1].t).map(([d,v]) =>
+      `<tr><td>${d}</td><td class="num">${v.r}/${v.t}</td><td style="width:35%"><div class="bar"><i style="width:${v.r/v.t*100}%"></i></div></td></tr>`).join("");
+
+  const h = loadHist();
+  h.unshift({ exam:S.name, mode:S.mode, score:right, total, at:new Date().toLocaleString() });
+  saveHist(h);
+
+  $("#retryWrongBtn").disabled = !qs.some(x=>!x.ok || !x.counted);
+  setReview("wrong");
+  show("result");
+}
+
+function setReview(f){
+  document.querySelectorAll("#reviewSeg button").forEach(b => b.classList.toggle("on", b.dataset.f===f));
+  const list = S.result.map((x,p)=>({...x,p})).filter(x =>
+    f==="all" || (f==="wrong" && (!x.ok || !x.counted)) || (f==="flag" && S.flag[x.i]));
+  $("#reviewList").innerHTML = list.length ? list.map(x => {
+    const opts = x.q.prompt.answers.map((a,j) => {
+      const L = LETTERS[j];
+      const c = x.q.correct_response.includes(L) ? "correct" : x.sel.includes(L) ? "wrong" : "";
+      return `<div class="opt locked ${c}"><span class="key">${L.toUpperCase()}</span><div class="txt">${a}</div></div>`;
+    }).join("");
+    const status = !x.sel.length ? "Not answered" : x.ok ? "✓ Correct" : "✗ Incorrect";
+    return `<div class="card" style="margin:10px 0">
+      <div class="row" style="margin-bottom:6px"><strong>Q${x.p+1}</strong>
+        ${x.q.section?`<span class="pill">${x.q.section}</span>`:""}
+        <span class="spacer"></span><span class="${x.ok?"pass":"fail"}">${status}</span></div>
+      <div class="q-body">${x.q.prompt.question}</div>
+      <div class="opts">${opts}</div>
+      ${x.q.prompt.explanation?`<div class="exp" style="margin-top:12px">${x.q.prompt.explanation}</div>`:""}
+    </div>`;
+  }).join("") : `<p class="muted">Nothing to show.</p>`;
+}
+document.querySelectorAll("#reviewSeg button").forEach(b => b.onclick = () => setReview(b.dataset.f));
+
+// ---------- wiring ----------
+$("#submitBtn").onclick = submit;
+$("#nextBtn").onclick = () => go(1);
+$("#prevBtn").onclick = () => go(-1);
+$("#finishBtn").onclick = finishAsk;
+$("#finishBtn2").onclick = finishAsk;
+$("#flagChk").onchange = e => { S.flag[S.order[S.idx]] = e.target.checked; renderNav(); };
+$("#quitBtn").onclick = () => { if (confirm("Quit this attempt? Progress will be lost.")){ clearInterval(S.tick); S=null; goHome(); } };
+$("#homeBtn").onclick = goHome;
+$("#retryAllBtn").onclick = () => { selected = S.name; mode = S.mode; start(S.order); };
+$("#retryWrongBtn").onclick = () => { selected = S.name; mode = S.mode; start(S.result.filter(x=>!x.ok||!x.counted).map(x=>x.i)); };
+$("#clearHist").onclick = () => { saveHist([]); renderHist(); };
+
+function goHome(){ show("home"); renderExamList(); renderHist(); }
+function renderHist(){
+  const h = loadHist();
+  $("#historyCard").classList.toggle("hidden", !h.length);
+  $("#histTable").innerHTML = `<tr><th>Exam</th><th>Mode</th><th class="num">Score</th><th>When</th></tr>` +
+    h.slice(0,15).map(r => { const p=r.score/r.total;
+      return `<tr><td>${r.exam}</td><td>${r.mode}</td><td class="num ${p>=PASS?"pass":"fail"}">${r.score}/${r.total} (${Math.round(p*100)}%)</td><td class="muted">${r.at}</td></tr>`; }).join("");
+}
+
+document.addEventListener("keydown", e => {
+  if ($("#quiz").classList.contains("hidden") || !S) return;
+  if (e.target.tagName === "INPUT") return;
+  const k = e.key.toLowerCase();
+  const n = cur().prompt.answers.length;
+  let idx = LETTERS.indexOf(k); if (idx<0 && /^[1-5]$/.test(k)) idx = +k-1;
+  if (idx>=0 && idx<n && k!=="f"){ pick(LETTERS[idx]); return; }
+  if (k==="f"){ $("#flagChk").click(); }
+  else if (k==="arrowright") go(1);
+  else if (k==="arrowleft") go(-1);
+  else if (k==="enter"){
+    e.preventDefault();
+    const i = S.order[S.idx];
+    if (S.mode==="test" && !S.done[i]) submit(); else go(1);
+  }
+});
+
+renderHist();
+
+// When served over http(s) (e.g. GitHub Pages), auto-load any exam-N.json next to this page.
+(async function autoload(){
+  if (!location.protocol.startsWith("http")) return;
+  const found = await Promise.all(Array.from({length:20}, (_,i) => `exam-${i+1}`).map(async n => {
+    try { const r = await fetch(n + ".json", {cache:"no-cache"}); if (!r.ok) return null;
+          const d = await r.json(); const qs = Array.isArray(d) ? d : d.results;
+          return Array.isArray(qs) && qs.length ? [n, qs] : null; } catch { return null; }
+  }));
+  found.filter(Boolean).forEach(([n, qs]) => exams[n] = qs);
+  if (found.some(Boolean)) renderExamList();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Third-party practice exams: keep local only, never commit
+exam-1.json
+exam-2.json
+exam-3.json
+exam-4.json
+backup/
