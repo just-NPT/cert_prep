@@ -49,6 +49,7 @@ label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
 .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
 .opt:hover{border-color:var(--accent)}
 .opt.sel{border-color:var(--accent);background:var(--accent-weak)}
+.opt.cur{outline:2px solid var(--accent);outline-offset:1px}
 .opt.correct{border-color:var(--ok);background:var(--ok-weak)}
 .opt.wrong{border-color:var(--bad);background:var(--bad-weak)}
 .opt.locked{cursor:default}
@@ -153,7 +154,7 @@ td.num,th.num{text-align:right;white-space:nowrap}
       <button id="nextBtn">Next →</button>
       <button class="primary hidden" id="finishBtn">Finish exam</button>
     </div>
-    <p class="muted" style="font-size:12.5px;margin:12px 0 0">Keys: <span class="kbd">A</span>–<span class="kbd">E</span> or <span class="kbd">1</span>–<span class="kbd">5</span> select · <span class="kbd">Enter</span> submit / next · <span class="kbd">←</span> <span class="kbd">→</span> navigate · <span class="kbd">F</span> flag</p>
+    <p class="muted" style="font-size:12.5px;margin:12px 0 0">Keys: <span class="kbd">A</span>–<span class="kbd">E</span> or <span class="kbd">1</span>–<span class="kbd">5</span> select · <span class="kbd">↑</span> <span class="kbd">↓</span> move · <span class="kbd">Enter</span> choose · <span class="kbd">Shift+Enter</span> submit / next · <span class="kbd">←</span> <span class="kbd">→</span> navigate · <span class="kbd">F</span> flag</p>
   </div>
 
   <div class="card">
@@ -282,9 +283,10 @@ function tickTimer(){
   } else $("#qTimer").textContent = "⏱ " + fmt(el);
 }
 
+let cursor = -1;
 function render(){
   const q = cur(), k = nCorrect(q), i = S.order[S.idx];
-  const locked = S.mode==="test" && S.done[i];
+  const locked = S.mode==="test" && !!S.done[i];
   const sel = S.ans[i] || [];
   $("#qTitle").textContent = S.name;
   $("#qMode").textContent = S.mode==="test" ? "Test mode" : "Exam mode";
@@ -301,6 +303,7 @@ function render(){
     if (locked){
       cls = "locked " + (q.correct_response.includes(L) ? "correct" : sel.includes(L) ? "wrong" : "");
     }
+    if (!locked && j===cursor) cls += " cur";
     return `<div class="opt ${cls}" data-l="${L}"><span class="key">${L.toUpperCase()}</span><div class="txt">${a}</div></div>`;
   }).join("");
   document.querySelectorAll("#qOpts .opt").forEach(el => el.onclick = () => pick(el.dataset.l));
@@ -313,6 +316,7 @@ function render(){
   if (S.mode==="test"){
     $("#submitBtn").classList.toggle("hidden", locked);
     $("#submitBtn").disabled = sel.length !== k;
+    $("#submitBtn").textContent = k>1 && sel.length!==k ? `Submit (${sel.length}/${k})` : "Submit";
     $("#nextBtn").classList.toggle("hidden", !locked && !last ? false : false);
     $("#nextBtn").textContent = last ? "Results" : "Next →";
     $("#finishBtn").classList.add("hidden");
@@ -354,7 +358,7 @@ function go(d){
   const n = S.idx + d;
   if (n<0) return;
   if (n>=S.order.length){ if (S.mode==="test") finishAsk(); return; }
-  S.idx = n; render(); window.scrollTo({top:0});
+  S.idx = n; cursor = -1; render(); window.scrollTo({top:0});
 }
 
 function updateScore(){
@@ -465,6 +469,11 @@ document.addEventListener("keydown", e => {
   if (e.target.tagName === "INPUT") return;
   const k = e.key.toLowerCase();
   const n = cur().prompt.answers.length;
+  if (k==="arrowdown" || k==="arrowup"){
+    e.preventDefault();
+    cursor = k==="arrowdown" ? Math.min(n-1, cursor+1) : Math.max(0, cursor<0 ? 0 : cursor-1);
+    render(); return;
+  }
   let idx = LETTERS.indexOf(k); if (idx<0 && /^[1-5]$/.test(k)) idx = +k-1;
   if (idx>=0 && idx<n && k!=="f"){ pick(LETTERS[idx]); return; }
   if (k==="f"){ $("#flagChk").click(); }
@@ -473,7 +482,9 @@ document.addEventListener("keydown", e => {
   else if (k==="enter"){
     e.preventDefault();
     const i = S.order[S.idx];
-    if (S.mode==="test" && !S.done[i]) submit(); else go(1);
+    const locked = S.mode==="test" && S.done[i];
+    if (e.shiftKey || locked){ if (S.mode==="test" && !locked) submit(); else go(1); }
+    else if (cursor>=0) pick(LETTERS[cursor]);
   }
 });
 
