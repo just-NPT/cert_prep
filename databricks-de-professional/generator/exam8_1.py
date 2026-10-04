@@ -12,7 +12,7 @@ e="""`unionByName` matches columns by name rather than position. With `allowMiss
 - `unionByName` without the flag fails when columns are missing.
 - A join combines columns, not rows."""),
 
-dict(d="Developing Code (Python & SQL)", q="""For each customer, the engineer needs a `status_changed` flag that is true when a row's `status` differs from the customer's previous status, ordered by `updated_at`. Which expression produces it?""",
+dict(d="Developing Code (Python & SQL)", q="""For each customer, the engineer needs a `status_changed` flag that is true when a row's `status` differs from the `status` of the customer's previous row, ordered by `updated_at`. Which expression produces it?""",
 a=["""w = Window.partitionBy("customer_id").orderBy("updated_at")
 df.withColumn("status_changed", F.col("status") != F.lag("status").over(w))""",
    """w = Window.partitionBy("customer_id").orderBy("updated_at")

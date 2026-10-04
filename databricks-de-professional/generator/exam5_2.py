@@ -104,7 +104,7 @@ e="""Python UDFs serialize every row between the JVM (or Photon) and Python work
 
 Registering the same Python function for SQL doesn't remove the overhead. RDD operations lose Catalyst optimizations."""),
 
-dict(d="Data Ingestion", q="""An Auto Loader stream ingests from a bucket that already holds millions of files across a deep directory tree, and thousands of new files arrive every hour. Listing the directory now takes most of each micro-batch.
+dict(d="Data Ingestion", q="""An Auto Loader stream ingests from a bucket that already holds millions of files across a deep directory tree, and thousands of new files arrive every hour. Most of the time in each micro-batch is now spent listing the directory.
 
 Which change will reduce this overhead the most?""",
 a=["Switch Auto Loader from directory listing mode to file notification mode (file events), so new files are discovered from storage event notifications.",
@@ -186,7 +186,7 @@ e="""A `StreamingQueryListener` gets a callback when a query starts, makes progr
 
 `awaitTermination()` blocks and returns no metrics, and a checkpoint is not a Delta table."""),
 
-dict(d="Cost & Performance Optimization", q="""A Delta table has 60 columns. Queries often filter on `region_code`, which is column number 45 in the schema, yet the query profile shows almost no files are skipped.
+dict(d="Cost & Performance Optimization", q="""A Delta table has 60 columns. Queries often filter on `region_code`, which is the 45th column in the schema, yet the query profile shows almost no files are skipped.
 
 What is the most likely cause, and how should it be fixed?""",
 a=["By default, file statistics are only collected for the first 32 columns. Add `region_code` to `delta.dataSkippingStatsColumns` (or move it into the first 32 columns) and recompute the statistics.",

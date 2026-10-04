@@ -154,7 +154,7 @@ e="""Hive metastore federation (part of Lakehouse Federation) adds an internal o
 
 Deep cloning copies the data, which they want to avoid during the migration."""),
 
-dict(d="Data Sharing & Federation", q="""A retailer and a consumer-goods brand want to work out how many customers they share and analyze campaign results together. Neither company is willing to expose its raw customer records to the other.
+dict(d="Data Sharing & Federation", q="""A retailer and a consumer-goods brand want to work out how many customers they have in common and analyze campaign results together. Neither company is willing to expose its raw customer records to the other.
 
 Which Databricks capability fits this scenario?""",
 a=["Databricks Clean Rooms",

@@ -92,7 +92,7 @@ e="""In open sharing, anyone who holds a valid bearer token can read the data. R
 
 Changing the share's contents doesn't invalidate the leaked token."""),
 
-dict(d="Data Sharing & Federation", q="""A provider wants to make sure an open-sharing recipient can only read the shared data from the partner's corporate network ranges. What should the provider configure?""",
+dict(d="Data Sharing & Federation", q="""A provider wants to make sure an open-sharing recipient can read the shared data only from IP addresses in the partner's corporate network. What should the provider configure?""",
 a=["An IP access list on the recipient",
    "A row filter on every shared table that checks `current_user()`",
    "A workspace IP access list in the provider's workspace",

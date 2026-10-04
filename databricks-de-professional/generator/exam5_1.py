@@ -138,7 +138,7 @@ e="""A max far above the median for both duration and shuffle read size means da
 
 More nodes don't help a single straggler task. Caching doesn't change the partition sizes. Fewer shuffle partitions make each partition larger."""),
 
-dict(d="Cost & Performance Optimization", q="""A data engineer compares the plans of a join query in the Spark UI. The initial physical plan shows a `SortMergeJoin`, but the final plan executed shows a `BroadcastHashJoin`.
+dict(d="Cost & Performance Optimization", q="""A data engineer compares the plans of a join query in the Spark UI. The initial physical plan shows a `SortMergeJoin`, but the final executed plan shows a `BroadcastHashJoin`.
 
 What explains the change?""",
 a=["Adaptive Query Execution re-optimized the plan at runtime after shuffle statistics showed one side was smaller than the broadcast threshold.",

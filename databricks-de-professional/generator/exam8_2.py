@@ -81,7 +81,7 @@ e="""You can add a whole schema to a share. Its current and future tables (and o
 
 Recipients receive access through `GRANT ... ON SHARE`, not schema grants. A union view doesn't work for tables with different schemas."""),
 
-dict(d="Data Sharing & Federation", q="""The table `sales.global_orders` is partitioned by `country`. A provider shares it with many recipients, and each recipient may only see its own country's partition. They want to use a single share.
+dict(d="Data Sharing & Federation", q="""The table `sales.global_orders` is partitioned by `country`. A provider shares it with many recipients, and each recipient may only see its own country's partition. The provider wants to use a single share.
 
 What should they do?""",
 a=["Set a `country` property on each recipient, and add the table to the share with `PARTITION (country = CURRENT_RECIPIENT('country'))`",

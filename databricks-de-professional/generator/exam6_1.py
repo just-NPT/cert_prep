@@ -79,7 +79,7 @@ e="""The checkpoint stores state whose schema depends on the stateful operations
 
 Triggers, rate limits, and most stateless projections and filters can usually be changed between restarts."""),
 
-dict(d="Transformation, Cleansing & Quality", q="""A bronze streaming table in an SDP pipeline ingests files from a landing zone that deletes files after 14 days. If someone ran a full refresh on this table, more than 14 days of history would be lost permanently.
+dict(d="Transformation, Cleansing & Quality", q="""A bronze streaming table in an SDP pipeline ingests files from a landing zone that deletes files after 14 days. If someone ran a full refresh on this table, all data older than 14 days would be lost permanently.
 
 How can the team prevent a full refresh of this table?""",
 a=["Set the table property `pipelines.reset.allowed` to `false` on the bronze streaming table.",

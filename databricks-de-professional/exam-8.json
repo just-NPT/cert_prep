@@ -37,7 +37,7 @@
             "id": 990008002,
             "assessment_type": "multiple-choice",
             "prompt": {
-                "question": "<p>For each customer, the engineer needs a <code>status_changed</code> flag that is true when a row's <code>status</code> differs from the customer's previous status, ordered by <code>updated_at</code>. Which expression produces it?</p>",
+                "question": "<p>For each customer, the engineer needs a <code>status_changed</code> flag that is true when a row's <code>status</code> differs from the <code>status</code> of the customer's previous row, ordered by <code>updated_at</code>. Which expression produces it?</p>",
                 "relatedLectureIds": [],
                 "links": [],
                 "feedbacks": [
@@ -58,7 +58,7 @@
                 "d"
             ],
             "section": "Developing Code (Python & SQL)",
-            "question_plain": "For each customer, the engineer needs a status_changed flag that is true when a row's status differs from the customer's previous status, ordered by updated_at. Which expression produces it?",
+            "question_plain": "For each customer, the engineer needs a status_changed flag that is true when a row's status differs from the status of the customer's previous row, ordered by updated_at. Which expression produces it?",
             "related_lectures": []
         },
         {
@@ -675,7 +675,7 @@
             "id": 990008024,
             "assessment_type": "multiple-choice",
             "prompt": {
-                "question": "<p>The table <code>sales.global_orders</code> is partitioned by <code>country</code>. A provider shares it with many recipients, and each recipient may only see its own country's partition. They want to use a single share.</p><p>What should they do?</p>",
+                "question": "<p>The table <code>sales.global_orders</code> is partitioned by <code>country</code>. A provider shares it with many recipients, and each recipient may only see its own country's partition. The provider wants to use a single share.</p><p>What should they do?</p>",
                 "relatedLectureIds": [],
                 "links": [],
                 "feedbacks": [
@@ -696,7 +696,7 @@
                 "a"
             ],
             "section": "Data Sharing & Federation",
-            "question_plain": "The table sales.global_orders is partitioned by country. A provider shares it with many recipients, and each recipient may only see its own country's partition. They want to use a single share.What should they do?",
+            "question_plain": "The table sales.global_orders is partitioned by country. A provider shares it with many recipients, and each recipient may only see its own country's partition. The provider wants to use a single share.What should they do?",
             "related_lectures": []
         },
         {
@@ -907,7 +907,7 @@
             "id": 990008032,
             "assessment_type": "multiple-choice",
             "prompt": {
-                "question": "<p>Finance wants an email when the account's Databricks spend for a business unit is expected to go over its monthly limit. Which feature fits best?</p>",
+                "question": "<p>Finance wants an email when a business unit's Databricks spend reaches set thresholds of its monthly limit. Which feature fits best?</p>",
                 "relatedLectureIds": [],
                 "links": [],
                 "feedbacks": [
@@ -928,7 +928,7 @@
                 "c"
             ],
             "section": "Monitoring & Alerting",
-            "question_plain": "Finance wants an email when the account's Databricks spend for a business unit is expected to go over its monthly limit. Which feature fits best?",
+            "question_plain": "Finance wants an email when a business unit's Databricks spend reaches set thresholds of its monthly limit. Which feature fits best?",
             "related_lectures": []
         },
         {
@@ -936,7 +936,7 @@
             "id": 990008033,
             "assessment_type": "multiple-choice",
             "prompt": {
-                "question": "<p>A job's cluster has terminated, and the job failed overnight. The engineer wants to look at the stages and tasks of the failed Spark job. What is the right approach?</p>",
+                "question": "<p>A job failed overnight, and its job cluster has since terminated. The engineer wants to look at the stages and tasks of the failed Spark job. What is the right approach?</p>",
                 "relatedLectureIds": [],
                 "links": [],
                 "feedbacks": [
@@ -957,7 +957,7 @@
                 "c"
             ],
             "section": "Monitoring & Alerting",
-            "question_plain": "A job's cluster has terminated, and the job failed overnight. The engineer wants to look at the stages and tasks of the failed Spark job. What is the right approach?",
+            "question_plain": "A job failed overnight, and its job cluster has since terminated. The engineer wants to look at the stages and tasks of the failed Spark job. What is the right approach?",
             "related_lectures": []
         },
         {
@@ -1052,7 +1052,7 @@
             "id": 990008037,
             "assessment_type": "multiple-choice",
             "prompt": {
-                "question": "<p>A notebook builds an expensive DataFrame <code>enriched</code>, made from several joins, and then runs five different aggregations on it, each followed by an action. Each action takes as long as the full pipeline.</p><p>What is the most effective change?</p>",
+                "question": "<p>A notebook builds an expensive DataFrame <code>enriched</code>, made from several joins, and then runs five different aggregations on it, each followed by an action. Each action takes as long as running the whole pipeline from scratch.</p><p>What is the most effective change?</p>",
                 "relatedLectureIds": [],
                 "links": [],
                 "feedbacks": [
@@ -1073,7 +1073,7 @@
                 "d"
             ],
             "section": "Cost & Performance Optimization",
-            "question_plain": "A notebook builds an expensive DataFrame enriched, made from several joins, and then runs five different aggregations on it, each followed by an action. Each action takes as long as the full pipeline.What is the most effective change?",
+            "question_plain": "A notebook builds an expensive DataFrame enriched, made from several joins, and then runs five different aggregations on it, each followed by an action. Each action takes as long as running the whole pipeline from scratch.What is the most effective change?",
             "related_lectures": []
         },
         {

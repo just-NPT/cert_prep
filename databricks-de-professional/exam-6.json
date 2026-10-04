@@ -182,7 +182,7 @@
             "id": 990006007,
             "assessment_type": "multiple-choice",
             "prompt": {
-                "question": "<p>A bronze streaming table in an SDP pipeline ingests files from a landing zone that deletes files after 14 days. If someone ran a full refresh on this table, more than 14 days of history would be lost permanently.</p><p>How can the team prevent a full refresh of this table?</p>",
+                "question": "<p>A bronze streaming table in an SDP pipeline ingests files from a landing zone that deletes files after 14 days. If someone ran a full refresh on this table, all data older than 14 days would be lost permanently.</p><p>How can the team prevent a full refresh of this table?</p>",
                 "relatedLectureIds": [],
                 "links": [],
                 "feedbacks": [
@@ -203,7 +203,7 @@
                 "a"
             ],
             "section": "Transformation, Cleansing & Quality",
-            "question_plain": "A bronze streaming table in an SDP pipeline ingests files from a landing zone that deletes files after 14 days. If someone ran a full refresh on this table, more than 14 days of history would be lost permanently.How can the team prevent a full refresh of this table?",
+            "question_plain": "A bronze streaming table in an SDP pipeline ingests files from a landing zone that deletes files after 14 days. If someone ran a full refresh on this table, all data older than 14 days would be lost permanently.How can the team prevent a full refresh of this table?",
             "related_lectures": []
         },
         {
@@ -1197,7 +1197,7 @@
             "id": 990006042,
             "assessment_type": "multiple-choice",
             "prompt": {
-                "question": "<p>A retailer and a consumer-goods brand want to work out how many customers they share and analyze campaign results together. Neither company is willing to expose its raw customer records to the other.</p><p>Which Databricks capability fits this scenario?</p>",
+                "question": "<p>A retailer and a consumer-goods brand want to work out how many customers they have in common and analyze campaign results together. Neither company is willing to expose its raw customer records to the other.</p><p>Which Databricks capability fits this scenario?</p>",
                 "relatedLectureIds": [],
                 "links": [],
                 "feedbacks": [
@@ -1218,7 +1218,7 @@
                 "c"
             ],
             "section": "Data Sharing & Federation",
-            "question_plain": "A retailer and a consumer-goods brand want to work out how many customers they share and analyze campaign results together. Neither company is willing to expose its raw customer records to the other.Which Databricks capability fits this scenario?",
+            "question_plain": "A retailer and a consumer-goods brand want to work out how many customers they have in common and analyze campaign results together. Neither company is willing to expose its raw customer records to the other.Which Databricks capability fits this scenario?",
             "related_lectures": []
         },
         {

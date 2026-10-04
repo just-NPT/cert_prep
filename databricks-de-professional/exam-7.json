@@ -704,7 +704,7 @@
             "id": 990007025,
             "assessment_type": "multiple-choice",
             "prompt": {
-                "question": "<p>A provider wants to make sure an open-sharing recipient can only read the shared data from the partner's corporate network ranges. What should the provider configure?</p>",
+                "question": "<p>A provider wants to make sure an open-sharing recipient can read the shared data only from IP addresses in the partner's corporate network. What should the provider configure?</p>",
                 "relatedLectureIds": [],
                 "links": [],
                 "feedbacks": [
@@ -725,7 +725,7 @@
                 "d"
             ],
             "section": "Data Sharing & Federation",
-            "question_plain": "A provider wants to make sure an open-sharing recipient can only read the shared data from the partner's corporate network ranges. What should the provider configure?",
+            "question_plain": "A provider wants to make sure an open-sharing recipient can read the shared data only from IP addresses in the partner's corporate network. What should the provider configure?",
             "related_lectures": []
         },
         {
@@ -1675,7 +1675,7 @@
                 ],
                 "explanation": "<p>Normalizing one-to-many nested data into a child table keyed by the parent ID gives clean grain for each entity. Joins and aggregations become simple, and line-item queries don't need to explode the array each time.</p><p>Fixed position columns and string concatenation don't scale and are hard to query.</p>",
                 "answers": [
-                    "<p>Create an <code>orders</code> silver table, and a <code>order_line_items</code> silver table built by exploding the array, with <code>order_id</code> as the parent key</p>",
+                    "<p>Create an <code>orders</code> silver table, and an <code>order_line_items</code> silver table built by exploding the array, with <code>order_id</code> as the parent key</p>",
                     "<p>Create one silver table for each possible array position (<code>item_1</code>, <code>item_2</code>, and so on)</p>",
                     "<p>Turn the array into a comma-separated string column</p>",
                     "<p>Keep the array nested in the orders table, and make every consumer explode it in each query</p>"

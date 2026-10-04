@@ -53,12 +53,12 @@ e="""The owner of an object has full control over it, including the right to gra
 
 `ALL PRIVILEGES` doesn't change ownership. Cloning creates new objects and loses history and grants. Ownership is not moved automatically."""),
 
-dict(d="Data Governance", q="""A data engineer wants to find, with code, every table that has read from `prod.bronze.orders` in the last 90 days. Which source provides this information?""",
+dict(d="Data Governance", q="""A data engineer wants to query, programmatically, every downstream table that was written using data from `prod.bronze.orders` in the last 90 days. Which source provides this information?""",
 a=["The `system.access.table_lineage` system table, filtered on `source_table_full_name = 'prod.bronze.orders'`",
    "The output of `DESCRIBE HISTORY prod.bronze.orders`",
    "The view `prod.information_schema.tables`, filtered on `table_name = 'orders'`",
    "The `system.billing.usage` table, filtered on the table name"],
-e="""Unity Catalog captures lineage automatically for queries run on Databricks and exposes it in the system tables `system.access.table_lineage` and `system.access.column_lineage`. Filtering on the source table lists the targets that read from it, with event times.
+e="""Unity Catalog captures lineage automatically for queries run on Databricks and exposes it in the system tables `system.access.table_lineage` and `system.access.column_lineage`. Filtering on the source table lists the target tables written from it, with event times.
 
 `DESCRIBE HISTORY` only shows operations that wrote to the table itself."""),
 
@@ -107,7 +107,7 @@ targets:
 ```
 
 A developer runs `databricks bundle deploy -t dev`. Which statement describes the deployed resources?""",
-a=["Resource names get the prefix `[dev <username>]`, and job schedules and triggers are paused, so each developer's copy is separate and doesn't run on its own.",
+a=["Resource names get the prefix `[dev <username>]`, and job schedules and triggers are paused, so each developer gets an isolated copy that doesn't run automatically.",
    "Resources are deployed under the production service principal, with schedules active, and overwrite the jobs used by the production target.",
    "The bundle is checked but not deployed. Development mode only runs `bundle validate`.",
    "All jobs in the bundle start running as soon as the deployment finishes."],

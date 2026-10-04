@@ -100,7 +100,7 @@ a=["`prod`, because job parameters are pushed down to all tasks and take precede
 e="""Job parameters apply to the whole job and are passed automatically to every task that accepts parameters. If a task parameter has the same key, the job parameter value wins. To control a value per task, give it a different key or use dynamic value references."""),
 
 dict(d="Data Modeling", q="""Bronze order records contain a nested `line_items` array. The silver layer has to support analytics on both orders and line items. Which modeling approach is most common?""",
-a=["Create an `orders` silver table, and a `order_line_items` silver table built by exploding the array, with `order_id` as the parent key",
+a=["Create an `orders` silver table, and an `order_line_items` silver table built by exploding the array, with `order_id` as the parent key",
    "Keep the array nested in the orders table, and make every consumer explode it in each query",
    "Turn the array into a comma-separated string column",
    "Create one silver table for each possible array position (`item_1`, `item_2`, and so on)"],

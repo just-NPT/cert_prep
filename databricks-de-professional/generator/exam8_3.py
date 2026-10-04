@@ -26,7 +26,7 @@ e="""For streaming tasks, jobs support health rules on backlog metrics, such as 
 
 A timeout would stop a continuous stream, and success notifications never fire for a stream that runs indefinitely."""),
 
-dict(d="Monitoring & Alerting", q="""Finance wants an email when the account's Databricks spend for a business unit is expected to go over its monthly limit. Which feature fits best?""",
+dict(d="Monitoring & Alerting", q="""Finance wants an email when a business unit's Databricks spend reaches set thresholds of its monthly limit. Which feature fits best?""",
 a=["Budgets in the account console, filtered by the business unit's tags, with email alerts at spending thresholds",
    "A cluster policy that limits each cluster to 10 workers",
    "An SDP expectation on the billing tables",
@@ -35,7 +35,7 @@ e="""Account budgets track spending, filtered by workspaces or tags, against a t
 
 Cluster policies limit configurations, not spending."""),
 
-dict(d="Monitoring & Alerting", q="""A job's cluster has terminated, and the job failed overnight. The engineer wants to look at the stages and tasks of the failed Spark job. What is the right approach?""",
+dict(d="Monitoring & Alerting", q="""A job failed overnight, and its job cluster has since terminated. The engineer wants to look at the stages and tasks of the failed Spark job. What is the right approach?""",
 a=["Open the failed task run in the job's run history and go to its Spark UI, which stays available after the cluster terminates",
    "Restart the job cluster by hand. The Spark UI is only available while the cluster is running.",
    "Run `DESCRIBE HISTORY` on the output table to see the stage details",
@@ -69,7 +69,7 @@ e="""`CACHE SELECT` loads the selected data into the Databricks disk cache on th
 
 `OPTIMIZE` compacts files, `ANALYZE` collects statistics, and `REFRESH TABLE` clears cached metadata."""),
 
-dict(d="Cost & Performance Optimization", q="""A notebook builds an expensive DataFrame `enriched`, made from several joins, and then runs five different aggregations on it, each followed by an action. Each action takes as long as the full pipeline.
+dict(d="Cost & Performance Optimization", q="""A notebook builds an expensive DataFrame `enriched`, made from several joins, and then runs five different aggregations on it, each followed by an action. Each action takes as long as running the whole pipeline from scratch.
 
 What is the most effective change?""",
 a=["Persist `enriched` (for example with `enriched.cache()`) before the five actions, and unpersist it afterwards.",
