@@ -78,6 +78,8 @@ td.num,th.num{text-align:right;white-space:nowrap}
 .bar{height:7px;background:var(--code);border-radius:9px;overflow:hidden;min-width:80px}
 .bar i{display:block;height:100%;background:var(--accent)}
 .hist{font-size:13px}
+.hist tr[data-file]{cursor:pointer}
+.hist tr[data-file]:hover td{background:var(--accent-weak)}
 .kbd{font:12px ui-monospace,Consolas,monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px}
 @media (max-width:600px){.score{font-size:34px}.card{padding:14px}}
 </style>
@@ -171,6 +173,7 @@ td.num,th.num{text-align:right;white-space:nowrap}
         <div class="muted" id="rTitle"></div>
         <div class="score" id="rScore"></div>
         <div id="rDetail" class="muted"></div>
+        <div id="rSaved" class="muted" style="font-size:12.5px;margin-top:4px"></div>
       </div>
       <span class="spacer"></span>
       <div class="row">
@@ -208,10 +211,28 @@ let exams = {};          // name -> results[]
 let selected = null;
 let mode = "test";
 let S = null;            // session
+let R = null;            // attempt shown on the result screen
+let useApi = location.protocol.startsWith("http");  // serve.py's /api/results, when running locally
 
 // ---------- storage (safe) ----------
 function loadHist(){ try{ return JSON.parse(localStorage.getItem(HKEY)) || []; }catch{ return []; } }
 function saveHist(h){ try{ localStorage.setItem(HKEY, JSON.stringify(h.slice(0,50))); }catch{} }
+
+// null when there is no API (file://, GitHub Pages, plain http.server) or the request fails
+async function fetchJSON(url, init){
+  if (!useApi) return null;
+  try{ const r = await fetch(url, {cache:"no-store", ...init}); return r.ok ? await r.json() : null; }catch{ return null; }
+}
+
+// Full attempt to results/ via serve.py; otherwise a one-line summary in browser storage.
+async function saveAttempt(a){
+  const r = await fetchJSON("api/results", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(a)});
+  if (r && r.file) return r.file;
+  const h = loadHist();
+  h.unshift({ exam:a.exam, mode:a.mode, score:a.score, total:a.total, at:new Date(a.finishedAt).toLocaleString() });
+  saveHist(h);
+  return null;
+}
 
 // ---------- loading ----------
 const drop = $("#drop"), fileIn = $("#file");
@@ -258,7 +279,8 @@ function start(indices){
   if ($("#optShuffle").checked) for (let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
   const mins = Math.max(1, +$("#optMinutes").value || 120);
   S = { name:selected, qs:exams[selected], order, mode, idx:0,
-        ans:{}, done:{}, flag:{}, t0:Date.now(),
+        ans:{}, done:{}, flag:{}, t0:Date.now(), shuffled:$("#optShuffle").checked,
+        qtime:{}, curI:null, qt0:Date.now(),
         limit: $("#optTimer").checked ? mins*60*1000 : 0 };
   show("quiz");
   clearInterval(S.tick); S.tick = setInterval(tickTimer, 1000); tickTimer();
@@ -283,8 +305,16 @@ function tickTimer(){
   } else $("#qTimer").textContent = "⏱ " + fmt(el);
 }
 
+// Adds the time since the last call to the question that was on screen.
+function trackTime(stop){
+  const now = Date.now();
+  if (S.curI != null) S.qtime[S.curI] = (S.qtime[S.curI]||0) + now - S.qt0;
+  S.curI = stop ? null : S.order[S.idx]; S.qt0 = now;
+}
+
 let cursor = -1;
 function render(){
+  trackTime();
   const q = cur(), k = nCorrect(q), i = S.order[S.idx];
   const locked = S.mode==="test" && !!S.done[i];
   const sel = S.ans[i] || [];
@@ -394,49 +424,71 @@ function finishAsk(){
 
 function finish(){
   clearInterval(S.tick);
-  const qs = S.order.map(i => ({ i, q:S.qs[i], sel:S.ans[i]||[], ok:isRight(S.qs[i], S.ans[i]),
-           counted: S.mode==="exam" || S.done[i] }));
-  const right = qs.filter(x=>x.ok && x.counted).length, total = qs.length;
-  const pct = right/total;
-  S.result = qs;
-  $("#rTitle").textContent = `${S.name} · ${S.mode==="test"?"Test":"Exam"} mode`;
-  $("#rScore").innerHTML = `<span class="${pct>=PASS?"pass":"fail"}">${Math.round(pct*100)}%</span>`;
-  $("#rDetail").textContent = `${right} / ${total} correct · ${pct>=PASS?"PASS":"FAIL"} (pass mark ${PASS*100}%) · time ${fmt(Date.now()-S.t0)}`;
-
-  // domains
+  trackTime(true);
+  const questions = S.order.map((i,p) => {
+    const q = S.qs[i], sel = S.ans[i]||[], counted = S.mode==="exam" || !!S.done[i];
+    return { n:p+1, index:i, id:q.id ?? null, section:q.section || "General",
+      selected:[...sel], correct:[...q.correct_response],
+      result: !counted || !sel.length ? "unanswered" : isRight(q, sel) ? "correct" : "incorrect",
+      flagged:!!S.flag[i], timeMs:Math.round(S.qtime[i]||0),
+      // snapshot, so the review shows what was asked even if the exam file changes later
+      question:{ id:q.id ?? null, section:q.section ?? null, correct_response:q.correct_response,
+        prompt:{ question:q.prompt.question, answers:q.prompt.answers, explanation:q.prompt.explanation || "" } } };
+  });
+  const score = questions.filter(x=>x.result==="correct").length, total = questions.length;
   const dom = {};
-  qs.forEach(x => { const d = x.q.section || "General"; dom[d] ??= {r:0,t:0}; dom[d].t++; if (x.ok && x.counted) dom[d].r++; });
+  questions.forEach(x => { dom[x.section] ??= {domain:x.section, correct:0, total:0}; dom[x.section].total++; if (x.result==="correct") dom[x.section].correct++; });
+  const a = { version:1, exam:S.name, mode:S.mode, shuffled:S.shuffled, timeLimitMin:S.limit/60000,
+    startedAt:new Date(S.t0).toISOString(), finishedAt:new Date().toISOString(), durationMs:Date.now()-S.t0,
+    score, total, pct:Math.round(score/total*1000)/10, pass:score/total>=PASS,
+    domains:Object.values(dom).sort((x,y)=>x.correct/x.total - y.correct/y.total), questions };
+  showResult(a);
+  $("#rSaved").textContent = "Saving…";
+  saveAttempt(a).then(file => { if (R===a) $("#rSaved").textContent = file ? `Saved to results/${file}` : "Summary saved in this browser."; });
+}
+
+function showResult(a, file){
+  R = a;
+  $("#rTitle").textContent = `${a.exam} · ${a.mode==="test"?"Test":"Exam"} mode · ${new Date(a.finishedAt).toLocaleString()}`;
+  $("#rScore").innerHTML = `<span class="${a.pass?"pass":"fail"}">${Math.round(a.score/a.total*100)}%</span>`;
+  $("#rDetail").textContent = `${a.score} / ${a.total} correct · ${a.pass?"PASS":"FAIL"} (pass mark ${PASS*100}%) · time ${fmt(a.durationMs)}`;
+  $("#rSaved").textContent = file ? `Saved to results/${file}` : "";
   $("#domainTable").innerHTML = `<tr><th>Domain</th><th class="num">Score</th><th></th></tr>` +
-    Object.entries(dom).sort((a,b)=>a[1].r/a[1].t - b[1].r/b[1].t).map(([d,v]) =>
-      `<tr><td>${d}</td><td class="num">${v.r}/${v.t}</td><td style="width:35%"><div class="bar"><i style="width:${v.r/v.t*100}%"></i></div></td></tr>`).join("");
-
-  const h = loadHist();
-  h.unshift({ exam:S.name, mode:S.mode, score:right, total, at:new Date().toLocaleString() });
-  saveHist(h);
-
-  $("#retryWrongBtn").disabled = !qs.some(x=>!x.ok || !x.counted);
+    a.domains.map(d =>
+      `<tr><td>${d.domain}</td><td class="num">${d.correct}/${d.total}</td><td style="width:35%"><div class="bar"><i style="width:${d.correct/d.total*100}%"></i></div></td></tr>`).join("");
+  const ex = exams[a.exam];
+  const canRetry = !!ex && a.questions.every(x => x.index < ex.length);
+  $("#retryAllBtn").disabled = !canRetry;
+  $("#retryWrongBtn").disabled = !canRetry || a.questions.every(x => x.result==="correct");
   setReview("wrong");
   show("result");
 }
 
+async function openAttempt(file){
+  const a = await fetchJSON("results/" + encodeURIComponent(file));
+  if (a && Array.isArray(a.questions)) showResult(a, file);
+  else alert(`Couldn't open results/${file}.`);
+}
+
 function setReview(f){
   document.querySelectorAll("#reviewSeg button").forEach(b => b.classList.toggle("on", b.dataset.f===f));
-  const list = S.result.map((x,p)=>({...x,p})).filter(x =>
-    f==="all" || (f==="wrong" && (!x.ok || !x.counted)) || (f==="flag" && S.flag[x.i]));
+  const list = R.questions.filter(x =>
+    f==="all" || (f==="wrong" && x.result!=="correct") || (f==="flag" && x.flagged));
   $("#reviewList").innerHTML = list.length ? list.map(x => {
-    const opts = x.q.prompt.answers.map((a,j) => {
+    const q = x.question;
+    const opts = q.prompt.answers.map((a,j) => {
       const L = LETTERS[j];
-      const c = x.q.correct_response.includes(L) ? "correct" : x.sel.includes(L) ? "wrong" : "";
+      const c = x.correct.includes(L) ? "correct" : x.selected.includes(L) ? "wrong" : "";
       return `<div class="opt locked ${c}"><span class="key">${L.toUpperCase()}</span><div class="txt">${a}</div></div>`;
     }).join("");
-    const status = !x.sel.length ? "Not answered" : x.ok ? "✓ Correct" : "✗ Incorrect";
+    const status = {correct:"✓ Correct", incorrect:"✗ Incorrect", unanswered:"Not answered"}[x.result];
     return `<div class="card" style="margin:10px 0">
-      <div class="row" style="margin-bottom:6px"><strong>Q${x.p+1}</strong>
-        ${x.q.section?`<span class="pill">${x.q.section}</span>`:""}
-        <span class="spacer"></span><span class="${x.ok?"pass":"fail"}">${status}</span></div>
-      <div class="q-body">${x.q.prompt.question}</div>
+      <div class="row" style="margin-bottom:6px"><strong>Q${x.n}</strong>
+        ${q.section?`<span class="pill">${q.section}</span>`:""}
+        <span class="spacer"></span><span class="${x.result==="correct"?"pass":"fail"}">${status}</span></div>
+      <div class="q-body">${q.prompt.question}</div>
       <div class="opts">${opts}</div>
-      ${x.q.prompt.explanation?`<div class="exp" style="margin-top:12px">${x.q.prompt.explanation}</div>`:""}
+      ${q.prompt.explanation?`<div class="exp" style="margin-top:12px">${q.prompt.explanation}</div>`:""}
     </div>`;
   }).join("") : `<p class="muted">Nothing to show.</p>`;
 }
@@ -451,17 +503,24 @@ $("#finishBtn2").onclick = finishAsk;
 $("#flagChk").onchange = e => { S.flag[S.order[S.idx]] = e.target.checked; renderNav(); };
 $("#quitBtn").onclick = () => { if (confirm("Quit this attempt? Progress will be lost.")){ clearInterval(S.tick); S=null; goHome(); } };
 $("#homeBtn").onclick = goHome;
-$("#retryAllBtn").onclick = () => { selected = S.name; mode = S.mode; start(S.order); };
-$("#retryWrongBtn").onclick = () => { selected = S.name; mode = S.mode; start(S.result.filter(x=>!x.ok||!x.counted).map(x=>x.i)); };
+const retry = indices => { selected = R.exam; mode = R.mode; start(indices); };
+$("#retryAllBtn").onclick = () => retry(R.questions.map(x=>x.index));
+$("#retryWrongBtn").onclick = () => retry(R.questions.filter(x=>x.result!=="correct").map(x=>x.index));
 $("#clearHist").onclick = () => { saveHist([]); renderHist(); };
 
 function goHome(){ show("home"); renderExamList(); renderHist(); }
-function renderHist(){
-  const h = loadHist();
-  $("#historyCard").classList.toggle("hidden", !h.length);
+// Saved attempts from results/ when serve.py is running (click to reopen), else browser-stored summaries.
+async function renderHist(){
+  const saved = await fetchJSON("api/results");
+  const rows = Array.isArray(saved)
+    ? saved.map(r => ({...r, at:new Date(r.finishedAt).toLocaleString()}))
+    : loadHist();
+  $("#clearHist").classList.toggle("hidden", Array.isArray(saved));
+  $("#historyCard").classList.toggle("hidden", !rows.length);
   $("#histTable").innerHTML = `<tr><th>Exam</th><th>Mode</th><th class="num">Score</th><th>When</th></tr>` +
-    h.slice(0,15).map(r => { const p=r.score/r.total;
-      return `<tr><td>${r.exam}</td><td>${r.mode}</td><td class="num ${p>=PASS?"pass":"fail"}">${r.score}/${r.total} (${Math.round(p*100)}%)</td><td class="muted">${r.at}</td></tr>`; }).join("");
+    rows.slice(0,15).map(r => { const p=r.score/r.total;
+      return `<tr${r.file?` data-file="${r.file.replace(/"/g,"&quot;")}"`:""}><td>${r.exam}</td><td>${r.mode}</td><td class="num ${p>=PASS?"pass":"fail"}">${r.score}/${r.total} (${Math.round(p*100)}%)</td><td class="muted">${r.at}</td></tr>`; }).join("");
+  document.querySelectorAll("#histTable tr[data-file]").forEach(tr => tr.onclick = () => openAttempt(tr.dataset.file));
 }
 
 document.addEventListener("keydown", e => {
